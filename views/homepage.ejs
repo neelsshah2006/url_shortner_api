@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>URL Shortener API Docs</title>
+  <link rel="shortcut icon" href="/images/favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="/stylesheets/homepage.css">
+</head>
+
+<body>
+  <div class="header-content">
+    <h1>📘 URL Shortener API</h1>
+    <button id="modeToggle">🌙</button>
+  </div>
+  <p>A minimal and efficient RESTful API for shortening URLs. This backend service allows users to register,
+    authenticate, create, manage, and track shortened links with robust authentication and statistics. Built with
+    Node.js, Express, and MongoDB.</p>
+
+  <section>
+    <h2>🚀 Features</h2>
+    <ul>
+      <li>User registration and authentication (JWT & cookies)</li>
+      <li>Secure password hashing</li>
+      <li>URL shortening with unique short codes</li>
+      <li>Redirection to original URLs</li>
+      <li>URL statistics (visit count, creation date)</li>
+      <li>User profile management</li>
+      <li>User-specific link management</li>
+      <li>Token blacklisting for secure logout</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>🧰 Technology Stack</h2>
+    <ul>
+      <li><strong>Language:</strong> JavaScript (Node.js)</li>
+      <li><strong>Framework:</strong> Express.js</li>
+      <li><strong>Database:</strong> MongoDB (Mongoose ODM)</li>
+      <li><strong>Authentication:</strong> JWT, bcrypt</li>
+      <li><strong>Templating:</strong> EJS</li>
+      <li><strong>Validation:</strong> express-validator</li>
+      <li><strong>Other:</strong> dotenv, cookie-parser, morgan, cors</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>📦 Installation</h2>
+    <pre class="code-block"><code>git clone https://github.com/neelsshah2006/url_shortner_api.git
+cd url_shortner_api
+npm install</code></pre>
+  </section>
+
+  <section>
+    <h2>🔐 Environment Variables</h2>
+    <pre class="code-block"><code>PORT=5000
+MONGO_URL=mongodb://127.0.0.1:27017/url_shortner
+JWT_SECRET=your_jwt_secret
+ROUNDS=15
+FRONTEND_URL=your_frontend_website_url
+</code></pre>
+    <p>FRONTEND_URL is optional. If not provided, the API will accept requests from all websites</p>
+  </section>
+
+  <section>
+    <h2>🚦 Authentication</h2>
+
+    <div class="endpoint">
+      <span class="method">POST</span> <code>/user/register</code> – Register a new user<br>
+      <strong>Request:</strong>
+      <pre class="code-block"><code>{
+  "firstName": "Neel",
+  "lastName": "Shah",
+  "username": "neelsshah2006",
+  "email": "neelsshah2006@gmail.com",
+  "password": "Password@123"
+}</code></pre>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "User Registered Successfully",
+  "data": {
+    "token": "...JWT_Token...",
+    "user": {
+      "fullName": {
+        "firstName": "Neel",
+        "lastName": "Shah",
+        "_id": "..."
+      },
+      "username": "neelsshah2006",
+      "email": "neelsshah2006@gmail.com",
+      "links": [],
+      "_id": "...",
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 201,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">POST</span> <code>/user/login</code> – Login with email or username,<br>
+      <strong>Request:</strong>
+      <pre class="code-block"><code>{
+  "email": "neelsshah2006@gmail.com",
+  "password": "Password@123"
+}</code></pre>
+      <p>OR</p>
+      <pre class="code-block"><code>{
+  "username": "neelsshah2006",
+  "password": "Password@123"
+}</code></pre>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "User Login Successful",
+  "data": {
+    "token": "...JWT_Token...",
+    "user": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Neel",
+        "lastName": "Shah",
+        "_id": "..."
+      },
+      "username": "neelsshah2006",
+      "email": "neelsshah2006@gmail.com",
+      "links": ["...", "..."],
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 200,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">GET</span> <code>/user/logout</code> – Logout user<br>
+      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "Logged Out Successfully",
+  "data": "Logged Out",
+  "statusCode": 200,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>👤 User Endpoints</h2>
+
+    <div class="endpoint">
+      <span class="method">GET</span> <code>/user/profile</code><br>
+      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "Profile Sent Successfully",
+  "data": {
+    "user": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Neel",
+        "lastName": "Shah",
+        "_id": "..."
+      },
+      "username": "neelsshah2006",
+      "email": "neelsshah2006@gmail.com",
+      "links": ["...", "..."],
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 200,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">PATCH</span> <code>/user/update-profile</code><br>
+      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <strong>Request:</strong>
+      <pre class="code-block"><code>{
+  "firstName": "Moksh",
+  "lastName": "Shah",
+  "username": "mokshshah"
+}</code></pre>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "Profile Updated Successfully",
+  "data": {
+    "user": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Moksh",
+        "lastName": "Shah",
+        "_id": "..."
+      },
+      "username": "mokshshah",
+      "email": "neelsshah2006@gmail.com",
+      "links": ["...", "..."],
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 200,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">PATCH</span> <code>/user/change-password</code><br>
+      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <strong>Request:</strong>
+      <pre class="code-block"><code>{
+  "oldPassword": "Password@123",
+  "newPassword": "NewPass@456"
+}</code></pre>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "Password Changed Successfully",
+  "data": {
+    "user": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Moksh",
+        "lastName": "Shah",
+        "_id": "..."
+      },
+      "username": "mokshshah",
+      "email": "neelsshah2006@gmail.com",
+      "links": ["...", "..."],
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 200,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>🔗 URL Management</h2>
+
+    <div class="endpoint">
+      <span class="method">POST</span> <code>/url/shorten</code><br>
+      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <strong>Request:</strong>
+      <pre class="code-block"><code>{
+  "longUrl": "https://example.com"
+}</code></pre>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "URL Shortened Successfully",
+  "data": {
+    "shortUrl": {
+      "user": "...",
+      "longUrl": "https://example.com",
+      "shortCode": "xxxxxx",
+      "visitCount": 0,
+      "_id": "...",
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 201,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">GET</span> <code>/url/stats</code><br>
+      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <span class="headers">Params:</span> <code>shortCode="xxxxxx"</code><br>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "URL Stats sent Successfully",
+  "data": {
+    "shortUrl": {
+      "_id": "...",
+      "user": "...",
+      "longUrl": "https://example.com",
+      "shortCode": "xxxxxx",
+      "visitCount": 10,
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 200,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">DELETE</span> <code>/url/delete</code><br>
+      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <span class="headers">Params:</span> <code>shortCode="xxxxxx"</code><br>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "URL Deleted Successfully",
+  "data": {
+    "deletedUrl": {
+      "_id": "...",
+      "user": "...",
+      "longUrl": "https://example.com",
+      "shortCode": "xxxxxx",
+      "visitCount": 10,
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 200,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>⚠️ Error Response Format</h2>
+    <pre class="code-block"><code>{
+  "success": false,
+  "message": "Error message",
+  "error": {
+    "code": "BAD_REQUEST",
+    "details": "Specific error details"
+  },
+  "statusCode": 400,
+  "timestamp": "..."
+}</code></pre>
+  </section>
+
+  <section>
+    <h2>📁 Folder Structure</h2>
+    <pre class="code-block"><code>
+url_shortner_api/
+│
+├── server.js
+├── app.js
+├── .env
+├── package.json
+├── db/
+│ └── mongodb.config.js
+├── controllers/
+│ ├── url.controller.js
+│ └── user.controller.js
+├── middleware/
+│ └── auth.middleware.js
+├── models/
+│ ├── blacklist.model.js
+│ ├── url.model.js
+│ └── user.model.js
+├── routes/
+│ ├── redirect.routes.js
+│ ├── url.routes.js
+│ └── user.routes.js
+├── services/
+│ ├── url.service.js
+│ └── user.service.js
+├── public/
+│ ├── images/
+| │ └── favicon.png
+│ ├── javascripts/
+| │ └── homepage.js
+│ └── stylesheets/
+|   ├── homepage.css
+|   └── notfound.css
+├── views/
+│ ├── homepage.ejs
+│ └── notfound.ejs
+├── utils/
+│ ├── response.util.js
+│ └── setCookie.util.js
+└── ...
+    </code></pre>
+  </section>
+
+  <footer>
+    <hr>
+    <p>Made with ❤️ by <a href="mailto:neelsshah2006@gmail.com">Neel Shah</a></p>
+  </footer>
+
+  <script src="/javascripts/homepage.js"></script>
+</body>
+
+</html>

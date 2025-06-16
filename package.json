@@ -1,0 +1,27 @@
+{
+  "name": "url_shortner_api",
+  "version": "1.0.0",
+  "description": "A minimal and efficient RESTful API for shortening URLs. It provides the ability to create, access, and track shortened links.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.5.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.2",
+    "morgan": "^1.10.0"
+  }
+}
