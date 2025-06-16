@@ -20,7 +20,17 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-app.use(cors());
+const corsOptions = process.env.FRONTEND_URL
+  ? {
+      origin: process.env.FRONTEND_URL,
+      credentials: true,
+    }
+  : {
+      origin: "*",
+      credentials: true,
+    };
+
+app.use(cors(corsOptions));
 
 app.set("view engine", "ejs");
 
