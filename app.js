@@ -19,17 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use(morgan("dev"));
-const corsOptions = process.env.FRONTEND_URL
-  ? {
-      origin: process.env.FRONTEND_URL,
-      credentials: true,
-    }
-  : {
-      origin: "*",
-      credentials: true,
-    };
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.set("view engine", "ejs");
 
