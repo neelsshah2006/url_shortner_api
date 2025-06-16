@@ -9,7 +9,9 @@ const userRoutes = require("./routes/user.routes");
 const urlRoutes = require("./routes/url.routes");
 const redirectRoutes = require("./routes/redirect.routes");
 
-dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 const app = express();
 
 app.use(express.json());
