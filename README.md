@@ -540,6 +540,16 @@ url_shortner_api/
 
 ---
 
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+You are free to use, modify, and distribute this software for personal or commercial purposes, provided that proper credit is given to the original author.
+
+© 2025 Neel Shah
+
+---
+
 ## Contact / Credits
 
 - **Author:** [Neel Shah](mailto:neelsshah2006@gmail.com)
