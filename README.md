@@ -11,6 +11,7 @@ API is currently openly availabe. Each of the following API Endpoint is currentl
 - User registration and authentication (JWT & cookies)
 - Secure password hashing
 - URL shortening with unique short codes
+- Creation and Editing of Custom URLs
 - Redirection to original URLs
 - URL statistics (visit count, creation date)
 - User profile management

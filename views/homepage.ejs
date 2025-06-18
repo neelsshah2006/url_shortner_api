@@ -11,7 +11,13 @@
 <body>
   <div class="header-content">
     <h1>📘 URL Shortener API</h1>
-    <button id="modeToggle">🌙</button>
+    <div class="buttons">
+      <button><a href="https://github.com/neelsshah2006/url_shortner_api" target="_blank"><img width="30"
+            src="/images/github.svg" alt="github"></a></button>
+      <button><a href="https://linkedin.com/in/neelsshah2006" target="_blank"><img width="30" src="/images/linkedin.svg"
+            alt="linkedin"></a></button>
+      <button id="modeToggle">🌙</button>
+    </div>
   </div>
   <p>A minimal and efficient RESTful API for shortening URLs. This backend service allows users to register,
     authenticate, create, manage, and track shortened links with robust authentication and statistics. Built with
@@ -26,6 +32,7 @@
       <li>User registration and authentication (JWT & cookies)</li>
       <li>Secure password hashing</li>
       <li>URL shortening with unique short codes</li>
+      <li>Creation and Editing of Custom URLs</li>
       <li>Redirection to original URLs</li>
       <li>URL statistics (visit count, creation date)</li>
       <li>User profile management</li>
@@ -468,7 +475,18 @@ url_shortner_api/
 
   <footer>
     <hr>
-    <p>Made with ❤️ by <a href="mailto:neelsshah2006@gmail.com">Neel Shah</a></p>
+    <p>Made with ❤️ by Neel Shah</p>
+    <section>
+      <div>
+        <p>Connect with me</p>
+        <div class="contact">
+          <button><a href="mailto:neelsshah2006@gmail.com" target="_blank"><img width="35" src="/images/mail.svg"
+                alt="gmail"></a></button>
+          <button><a href="https://linkedin.com/in/neelsshah2006" target="_blank"><img width="30"
+                src="/images/linkedin.svg" alt="linkedin"></a></button>
+        </div>
+      </div>
+    </section>
   </footer>
 
   <script src="/javascripts/homepage.js"></script>
