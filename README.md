@@ -67,7 +67,7 @@ FRONTEND_URL=your_frontend_website_url
 | ROUNDS       | Bcrypt salt rounds for password hash |
 | FRONTEND_URL | Your Frontend Website URL (Optional) |
 
-FRONTEND_URL is an optional environment variable. If not provided, API will accept responses from all websites
+FRONTEND_URL is an optional environment variable. If not provided, API will accept requests from all websites
 
 ### Running the Project
 
@@ -365,6 +365,42 @@ The server will start on `http://localhost:5000` (or your specified port in the 
     }
     ```
   - `400/401/500` with error message
+
+#### Change Shortened URL to a custom URL or Update a custom URL
+
+- **PATCH** `/url/custom-url`
+- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Body:**
+  ```json
+  {
+    "existingCode": "xxxxxx",
+    "customCode": "example"
+  }
+  ```
+- `customCode` must be atleast 6 characters long
+- **Response:**
+  - `200 OK` with shortened URL info
+    ```json
+    {
+      "success": true,
+      "message": "URL Shortened Successfully",
+      "data": {
+        "shortUrl": {
+          "user": "...User_ID...",
+          "longUrl": "https://example.com",
+          "shortCode": "example",
+          "visitCount": 0,
+          "_id": "...",
+          "createdAt": "...",
+          "updatedAt": "...",
+          "__v": 0
+        }
+      },
+      "statusCode": 201,
+      "timestamp": "..."
+    }
+    ```
+  - `400/401/404/409/500` with error message
 
 #### Get URL Stats
 

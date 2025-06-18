@@ -73,6 +73,62 @@ module.exports.getStats = async (req, res) => {
   }
 };
 
+module.exports.createCustomUrl = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, "Validation Error", errors.array(), 400);
+  }
+
+  const { existingCode, customCode } = req.body;
+  const id = req.user._id;
+
+  try {
+    const url = await urlModel.findOne({ shortCode: existingCode });
+    if (!url) {
+      return sendError(
+        res,
+        "Invalid Existing Short Code",
+        "No URL exists with given original short code",
+        404
+      );
+    }
+
+    if (String(url.user) !== String(id)) {
+      return sendError(
+        res,
+        "Unauthorized",
+        "The UserId connected with the URL does not match the requester's UserId",
+        401
+      );
+    }
+
+    const exists = await urlModel.findOne({ shortCode: customCode });
+    if (exists) {
+      return sendError(
+        res,
+        "This Custom URL is already taken",
+        "The provided Custom Code is already linked to another link",
+        409
+      );
+    }
+
+    const updatedUrl = await urlService.createCustomUrl({
+      existingCode,
+      customCode,
+      id,
+    });
+
+    return sendSuccess(
+      res,
+      "Custom Code attached successfully",
+      { url: updatedUrl },
+      200
+    );
+  } catch (error) {
+    return sendError(res, "Something Went Wrong", error.message, 500);
+  }
+};
+
 module.exports.deleteUrl = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

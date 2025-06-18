@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const urlModel = require("../models/url.model");
 const { sendError } = require("../utils/response.util");
 const router = express.Router();
@@ -9,6 +10,10 @@ router.get("/", (req, res) => {
 
 router.get("/not-found", (req, res) => {
   return res.render("notfound");
+});
+
+router.get("/favicon.ico", (req, res) => {
+  return res.sendFile(path.join(__dirname, "../public/images/favicon.png"));
 });
 
 router.get("/:shortCode", async (req, res) => {

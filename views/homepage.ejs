@@ -69,8 +69,9 @@ FRONTEND_URL=your_frontend_website_url
     <h2>🚦 Authentication</h2>
 
     <div class="endpoint">
-      <span class="method">POST</span> <code>/user/register</code> – Register a new user<br>
-      <strong>Request:</strong>
+      <div class="endpointTitle">Register a new user</div>
+      <span class="method">POST</span> <code>/user/register</code><br>
+      <strong>Request Body:</strong>
       <pre class="code-block"><code>{
   "firstName": "Neel",
   "lastName": "Shah",
@@ -105,8 +106,9 @@ FRONTEND_URL=your_frontend_website_url
     </div>
 
     <div class="endpoint">
-      <span class="method">POST</span> <code>/user/login</code> – Login with email or username,<br>
-      <strong>Request:</strong>
+      <div class="endpointTitle">Login with email or username</div>
+      <span class="method">POST</span> <code>/user/login</code><br>
+      <strong>Request Body:</strong>
       <pre class="code-block"><code>{
   "email": "neelsshah2006@gmail.com",
   "password": "Password@123"
@@ -143,8 +145,9 @@ FRONTEND_URL=your_frontend_website_url
     </div>
 
     <div class="endpoint">
-      <span class="method">GET</span> <code>/user/logout</code> – Logout user<br>
-      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <div class="endpointTitle">Logout user</div>
+      <span class="method">GET</span> <code>/user/logout</code><br>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
       <strong>Response:</strong>
       <pre class="code-block"><code>{
   "success": true,
@@ -160,8 +163,9 @@ FRONTEND_URL=your_frontend_website_url
     <h2>👤 User Endpoints</h2>
 
     <div class="endpoint">
+      <div class="endpointTitle">Get User Profile</div>
       <span class="method">GET</span> <code>/user/profile</code><br>
-      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
       <strong>Response:</strong>
       <pre class="code-block"><code>{
   "success": true,
@@ -188,9 +192,10 @@ FRONTEND_URL=your_frontend_website_url
     </div>
 
     <div class="endpoint">
+      <div class="endpointTitle">Update User Profile</div>
       <span class="method">PATCH</span> <code>/user/update-profile</code><br>
-      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
-      <strong>Request:</strong>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <strong>Request Body:</strong>
       <pre class="code-block"><code>{
   "firstName": "Moksh",
   "lastName": "Shah",
@@ -222,9 +227,10 @@ FRONTEND_URL=your_frontend_website_url
     </div>
 
     <div class="endpoint">
+      <div class="endpointTitle">Change Account Password</div>
       <span class="method">PATCH</span> <code>/user/change-password</code><br>
-      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
-      <strong>Request:</strong>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <strong>Request Body:</strong>
       <pre class="code-block"><code>{
   "oldPassword": "Password@123",
   "newPassword": "NewPass@456"
@@ -253,15 +259,47 @@ FRONTEND_URL=your_frontend_website_url
   "timestamp": "..."
 }</code></pre>
     </div>
+
+    <div class="endpoint">
+      <div class="endpointTitle">Get all Links created by the loginned User</div>
+      <span class="method">GET</span> <code>/user/get-links</code><br>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "Links Sent Successfully",
+  "data": {
+    "links": [
+      {
+        "_id": "...",
+        "longUrl": "https://www.google.com",
+        "shortCode": "xxxxxx",
+        "visitCount": 7,
+        "createdAt": "..."
+      },
+      {
+        "_id": "...",
+        "longUrl": "https://example.com",
+        "shortCode": "xxxxxx",
+        "visitCount": 2,
+        "createdAt": "..."
+      }
+    ]
+  },
+  "statusCode": 200,
+  "timestamp": "2025-06-16T12:35:10.937Z"
+}</code></pre>
+    </div>
   </section>
 
   <section>
     <h2>🔗 URL Management</h2>
 
     <div class="endpoint">
+      <div class="endpointTitle">Shorten Link</div>
       <span class="method">POST</span> <code>/url/shorten</code><br>
-      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
-      <strong>Request:</strong>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <strong>Request Body:</strong>
       <pre class="code-block"><code>{
   "longUrl": "https://example.com"
 }</code></pre>
@@ -287,9 +325,40 @@ FRONTEND_URL=your_frontend_website_url
     </div>
 
     <div class="endpoint">
+      <div class="endpointTitle">Create a Custom URL to the provided Link or Edit an already customized URL</div>
+      <span class="method">PATCH</span> <code>/url/custom-url</code><br>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <strong>Request Body:</strong>
+      <pre class="code-block"><code>{
+  "existingCode": "abc78s",
+  "customCode": "example"
+}</code></pre>
+      <strong>Response:</strong>
+      <pre class="code-block"><code>{
+  "success": true,
+  "message": "URL Shortened Successfully",
+  "data": {
+    "shortUrl": {
+      "user": "...User_ID...",
+      "longUrl": "https://example.com",
+      "shortCode": "example",
+      "visitCount": 0,
+      "_id": "...",
+      "createdAt": "...",
+      "updatedAt": "...",
+      "__v": 0
+    }
+  },
+  "statusCode": 201,
+  "timestamp": "..."
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpointTitle">Get all Stats Related to a given URL</div>
       <span class="method">GET</span> <code>/url/stats</code><br>
-      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
-      <span class="headers">Params:</span> <code>shortCode="xxxxxx"</code><br>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <span class="headers">Params:</span> <code>shortCode=xxxxxx</code><br>
       <strong>Response:</strong>
       <pre class="code-block"><code>{
   "success": true,
@@ -312,9 +381,10 @@ FRONTEND_URL=your_frontend_website_url
     </div>
 
     <div class="endpoint">
+      <div class="endpointTitle">Delete a Shortened URL</div>
       <span class="method">DELETE</span> <code>/url/delete</code><br>
-      <span class="headers">Headers:</span> <code>Authorization="Bearer __token__"</code><br>
-      <span class="headers">Params:</span> <code>shortCode="xxxxxx"</code><br>
+      <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <span class="headers">Params:</span> <code>shortCode=xxxxxx</code><br>
       <strong>Response:</strong>
       <pre class="code-block"><code>{
   "success": true,

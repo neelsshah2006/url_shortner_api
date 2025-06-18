@@ -69,6 +69,17 @@ body.dark-mode .endpoint:hover {
     background-color: #242424;
 }
 
+.endpointTitle {
+    font-size: 2rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1rem;
+}
+
 .method {
     font-weight: bold;
     color: #fff;

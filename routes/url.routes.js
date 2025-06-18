@@ -7,15 +7,34 @@ const authMiddleWare = require("../middleware/auth.middleware");
 router.post(
   "/shorten",
   authMiddleWare,
-  body("longUrl").isURL().withMessage("Please provide a Valid URL"),
+  body("longUrl").exists().isURL().withMessage("Please provide a Valid URL"),
   urlController.shorten
+);
+
+router.patch(
+  "/custom-url",
+  authMiddleWare,
+  body("existingCode")
+    .isString()
+    .exists()
+    .isLength({ min: 6 })
+    .withMessage("Existing Short Code is required"),
+  body("customCode")
+    .isString()
+    .exists()
+    .isLength({ min: 6 })
+    .withMessage(
+      "Custom Code is required and must be atleast 6 characters long"
+    ),
+  urlController.createCustomUrl
 );
 
 router.get(
   "/stats",
   authMiddleWare,
   query("shortCode")
-    .isLength({ min: 6, max: 6 })
+    .exists()
+    .isLength({ min: 6 })
     .withMessage("Invalid Short URL"),
   urlController.getStats
 );
@@ -24,7 +43,8 @@ router.delete(
   "/delete",
   authMiddleWare,
   query("shortCode")
-    .isLength({ min: 6, max: 6 })
+    .exists()
+    .isLength({ min: 6 })
     .withMessage("Invalid Short URL"),
   urlController.deleteUrl
 );
