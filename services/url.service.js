@@ -1,6 +1,12 @@
 const crypto = require("crypto");
 const urlModel = require("../models/url.model");
 const userModel = require("../models/user.model");
+const {
+  BadRequestError,
+  NotFoundError,
+  ConflictError,
+  UnauthorizedError,
+} = require("../utils/appError.util");
 
 const SHORTCODE_LENGTH = 6;
 const CHARSET =
@@ -28,37 +34,56 @@ async function generateUniqueShortCode(length = SHORTCODE_LENGTH) {
   return shortCode;
 }
 
-module.exports.shorten = async ({ longUrl, id }) => {
+const shorten = async ({ longUrl, id }) => {
   if (!id || !longUrl) {
-    throw new Error("All fields are Required");
+    throw new BadRequestError("User ID and long URL are required.");
   }
 
   const shortCode = await generateUniqueShortCode();
 
   const url = await urlModel.create({
     user: id,
-    longUrl: longUrl,
-    shortCode: shortCode,
+    longUrl,
+    shortCode,
   });
 
   const user = await userModel.findById(id);
-  if (!user) throw new Error("User not found");
+  if (!user) throw new NotFoundError("User not found");
+
   user.links.push(url._id);
   await user.save();
 
   return url;
 };
 
-module.exports.createCustomUrl = async ({ existingCode, customCode, id }) => {
+const createCustomUrl = async ({ existingCode, customCode, id }) => {
   if (!existingCode || !customCode || !id) {
-    throw new Error("All Fields Are Required");
+    throw new BadRequestError(
+      "All fields (existingCode, customCode, id) are required."
+    );
   }
 
-  const newUrl = await urlModel.findOneAndUpdate(
+  const exists = await urlModel.findOne({ shortCode: customCode });
+  if (exists) throw new ConflictError("Custom code is already in use.");
+
+  const url = await urlModel.findOne({ shortCode: existingCode });
+  if (!url) throw new NotFoundError("Original short code does not exist.");
+  if (String(url.user) !== String(id)) {
+    throw new UnauthorizedError(
+      "You do not have permission to modify this URL."
+    );
+  }
+
+  const updatedUrl = await urlModel.findOneAndUpdate(
     { shortCode: existingCode },
     { shortCode: customCode },
     { new: true }
   );
 
-  return newUrl;
+  return updatedUrl;
+};
+
+module.exports = {
+  shorten,
+  createCustomUrl,
 };

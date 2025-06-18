@@ -1,32 +1,33 @@
-const sendSuccess = (res, message, data, statusCode) => {
-  return res.status(statusCode).json({
+const sendSuccess = (res, message = "Success", data = {}, statusCode = 200) => {
+  res.status(statusCode).json({
     success: true,
-    message: message,
-    data: data,
-    statusCode: statusCode,
+    message,
+    data,
+    statusCode,
     timestamp: new Date().toISOString(),
   });
 };
 
-const code = {
-  400: "BAD_REQUEST",
-  401: "UNAUTHORIZED",
-  404: "NOT_FOUND",
-  409: "CONFLICT",
-  500: "INTERNAL_SERVER_ERROR",
-};
-
-const sendError = (res, message, error, statusCode) => {
-  return res.status(statusCode).json({
+const sendError = (
+  res,
+  message = "Error",
+  errorCode = "INTERNAL_SERVER_ERROR",
+  statusCode = 500,
+  stack = undefined
+) => {
+  const response = {
     success: false,
-    message: message,
-    error: {
-      code: code[statusCode] || "UNKNOWN_ERROR",
-      details: error,
-    },
-    statusCode: statusCode,
+    message,
+    errorCode,
+    statusCode,
     timestamp: new Date().toISOString(),
-  });
+  };
+
+  if (process.env.NODE_ENV === "development" && stack) {
+    response.stack = stack;
+  }
+
+  res.status(statusCode).json(response);
 };
 
 module.exports = { sendSuccess, sendError };

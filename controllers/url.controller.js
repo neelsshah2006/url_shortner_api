@@ -2,181 +2,103 @@ const { validationResult } = require("express-validator");
 const urlService = require("../services/url.service");
 const urlModel = require("../models/url.model");
 const userModel = require("../models/user.model");
-const { sendSuccess, sendError } = require("../utils/response.util");
 
-module.exports.shorten = async (req, res) => {
+const {
+  NotFoundError,
+  ConflictError,
+  BadRequestError,
+  UnauthorizedError,
+} = require("../utils/appError.util");
+
+const { sendSuccess } = require("../utils/response.util");
+const catchAsync = require("../utils/catchAsync.util");
+
+// SHORTEN
+module.exports.shorten = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, "Validation Error", errors.array(), 400);
-  }
+  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
 
   const { longUrl } = req.body;
   const id = req.user._id;
 
-  try {
-    const shortUrl = await urlService.shorten({ id, longUrl });
-    return sendSuccess(
-      res,
-      "URL Shortened Successfully",
-      { shortUrl: shortUrl },
-      201
-    );
-  } catch (error) {
-    return sendError(res, "Something Went Wrong", error.message, 500);
-  }
-};
+  const shortUrl = await urlService.shorten({ longUrl, id });
 
-module.exports.getStats = async (req, res) => {
+  return sendSuccess(res, "URL Shortened Successfully", { shortUrl }, 201);
+});
+
+// GET STATS
+module.exports.getStats = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, "Validation Error", errors.array(), 400);
-  }
+  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
 
   const { shortCode } = req.query;
-  if (!shortCode) {
-    return sendError(
-      res,
-      "ShortURL code is required",
-      "shortCode not provided in params",
-      400
-    );
-  }
+  if (!shortCode)
+    throw new BadRequestError("shortCode query param is required");
 
   const id = req.user._id;
 
-  try {
-    const url = await urlModel.findOne({ shortCode });
-    if (!url) {
-      return sendError(
-        res,
-        "URL Not Found",
-        "No URL is linked to the provided ShortCode",
-        404
-      );
-    }
-    if (String(url.user) != String(id)) {
-      return sendError(
-        res,
-        "Unauthorized",
-        "UserId of the user who created the URL does not match with the UserId of the request",
-        401
-      );
-    }
-    return sendSuccess(
-      res,
-      "URL Stats sent Successfully",
-      { shortUrl: url },
-      200
-    );
-  } catch (error) {
-    return sendError(res, "Something Went Wrong", error.message, 500);
-  }
-};
+  const url = await urlModel.findOne({ shortCode });
+  if (!url)
+    throw new NotFoundError("No URL is linked to the provided ShortCode");
 
-module.exports.createCustomUrl = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, "Validation Error", errors.array(), 400);
+  if (String(url.user) !== String(id)) {
+    throw new UnauthorizedError(
+      "User does not have permission to access this URL"
+    );
   }
+
+  return sendSuccess(
+    res,
+    "URL Stats sent Successfully",
+    { shortUrl: url },
+    200
+  );
+});
+
+// CREATE CUSTOM URL
+module.exports.createCustomUrl = catchAsync(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
 
   const { existingCode, customCode } = req.body;
   const id = req.user._id;
 
-  try {
-    const url = await urlModel.findOne({ shortCode: existingCode });
-    if (!url) {
-      return sendError(
-        res,
-        "Invalid Existing Short Code",
-        "No URL exists with given original short code",
-        404
-      );
-    }
+  const updatedUrl = await urlService.createCustomUrl({
+    existingCode,
+    customCode,
+    id,
+  });
 
-    if (String(url.user) !== String(id)) {
-      return sendError(
-        res,
-        "Unauthorized",
-        "The UserId connected with the URL does not match the requester's UserId",
-        401
-      );
-    }
+  return sendSuccess(
+    res,
+    "Custom Code attached successfully",
+    { url: updatedUrl },
+    200
+  );
+});
 
-    const exists = await urlModel.findOne({ shortCode: customCode });
-    if (exists) {
-      return sendError(
-        res,
-        "This Custom URL is already taken",
-        "The provided Custom Code is already linked to another link",
-        409
-      );
-    }
-
-    const updatedUrl = await urlService.createCustomUrl({
-      existingCode,
-      customCode,
-      id,
-    });
-
-    return sendSuccess(
-      res,
-      "Custom Code attached successfully",
-      { url: updatedUrl },
-      200
-    );
-  } catch (error) {
-    return sendError(res, "Something Went Wrong", error.message, 500);
-  }
-};
-
-module.exports.deleteUrl = async (req, res) => {
+// DELETE URL
+module.exports.deleteUrl = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, "Validation Error", errors.array(), 400);
-  }
+  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
 
   const { shortCode } = req.query;
-  if (!shortCode) {
-    return sendError(
-      res,
-      "ShortURL code is required",
-      "shortCode not provided in params",
-      400
-    );
-  }
+  if (!shortCode)
+    throw new BadRequestError("shortCode query param is required");
+
   const id = req.user._id;
 
-  try {
-    const url = await urlModel.findOne({ shortCode });
-    if (!url) {
-      return sendError(
-        res,
-        "URL Not Found",
-        "No URL is linked to the provided ShortCode",
-        404
-      );
-    }
-    if (String(url.user) !== String(id)) {
-      return sendError(
-        res,
-        "Unauthorized",
-        "UserId of the user who created the URL does not match with the UserId of the request",
-        401
-      );
-    }
+  const url = await urlModel.findOne({ shortCode });
+  if (!url) throw new NotFoundError("No URL found for this ShortCode");
 
-    const deletedUrl = await urlModel.findOneAndDelete({ shortCode });
-    const user = await userModel.findById(deletedUrl.user);
-    user.links.pull(deletedUrl._id);
-    await user.save();
-
-    return sendSuccess(
-      res,
-      "URL Deleted Successfully",
-      { deletedUrl: deletedUrl },
-      200
-    );
-  } catch (error) {
-    return sendError(res, "Something Went Wrong", error.message, 500);
+  if (String(url.user) !== String(id)) {
+    throw new UnauthorizedError("You can only delete URLs you created");
   }
-};
+
+  const deletedUrl = await urlModel.findOneAndDelete({ shortCode });
+  const user = await userModel.findById(deletedUrl.user);
+  user.links.pull(deletedUrl._id);
+  await user.save();
+
+  return sendSuccess(res, "URL Deleted Successfully", { deletedUrl }, 200);
+});

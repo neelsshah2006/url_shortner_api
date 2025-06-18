@@ -1,23 +1,20 @@
 const userModel = require("../models/user.model");
+const {
+  BadRequestError,
+  ConflictError,
+  UnauthorizedError,
+  NotFoundError,
+} = require("../utils/appError.util");
 
-module.exports.register = async ({
-  firstName,
-  lastName,
-  username,
-  email,
-  password,
-}) => {
+const register = async ({ firstName, lastName, username, email, password }) => {
   if (!firstName || !lastName || !username || !email || !password) {
-    throw new Error("All fields are Required");
+    throw new BadRequestError("All fields are required");
   }
 
   const hashedPassword = await userModel.hashPassword(password);
 
   const user = await userModel.create({
-    fullName: {
-      firstName,
-      lastName,
-    },
+    fullName: { firstName, lastName },
     username,
     email,
     password: hashedPassword,
@@ -30,24 +27,17 @@ module.exports.register = async ({
   return { token, user: userObj };
 };
 
-module.exports.updateProfile = async ({
-  firstName,
-  lastName,
-  username,
-  id,
-}) => {
+const updateProfile = async ({ firstName, lastName, username, id }) => {
   if (!firstName || !lastName) {
-    throw new Error("First and last name are required");
+    throw new BadRequestError("First and last name are required");
   }
 
   if (!username) {
-    throw new Error("Username is required");
+    throw new BadRequestError("Username is required");
   }
 
   const isUser = await userModel.findById(id);
-  if (!isUser) {
-    throw new Error("This User does not exist");
-  }
+  if (!isUser) throw new NotFoundError("User not found");
 
   const user = await userModel.findOneAndUpdate(
     { _id: id },
@@ -58,28 +48,29 @@ module.exports.updateProfile = async ({
   return user;
 };
 
-module.exports.changePassword = async ({ oldPassword, newPassword, id }) => {
+const changePassword = async ({ oldPassword, newPassword, id }) => {
   if (!id || !newPassword || !oldPassword) {
-    throw new Error("All fields are required");
+    throw new BadRequestError("All fields are required");
   }
 
   const user = await userModel.findById(id).select("+password");
-  if (!user) {
-    throw new Error("User not found");
-  }
+  if (!user) throw new NotFoundError("User not found");
 
   const isMatch = await user.comparePassword(oldPassword);
-  if (!isMatch) {
-    throw new Error("Incorrect Password");
-  }
+  if (!isMatch) throw new UnauthorizedError("Incorrect old password");
 
   if (oldPassword === newPassword) {
-    throw new Error("Old and New Password Cannot be Same");
+    throw new ConflictError("Old and new passwords must be different");
   }
 
   user.password = await userModel.hashPassword(newPassword);
   await user.save();
 
-  const userWithoutPassword = await userModel.findById(id);
-  return userWithoutPassword;
+  return await userModel.findById(id).select("-password");
+};
+
+module.exports = {
+  register,
+  updateProfile,
+  changePassword,
 };

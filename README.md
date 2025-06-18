@@ -29,7 +29,7 @@ API is currently openly availabe. Each of the following API Endpoint is currentl
 - **Authentication:** JWT, bcrypt
 - **Templating:** EJS
 - **Validation:** express-validator
-- **Other:** dotenv, cookie-parser, morgan, cors
+- **Other:** dotenv, cookie-parser, morgan, cors, helmet
 
 ---
 
@@ -56,6 +56,7 @@ Create a `.env` file in the root directory:
 PORT=5000
 MONGO_URL=mongodb://127.0.0.1:27017/url_shortner
 JWT_SECRET=your_jwt_secret
+NODE_ENV=development
 ROUNDS=15
 FRONTEND_URL=your_frontend_website_url
 ```
@@ -65,6 +66,7 @@ FRONTEND_URL=your_frontend_website_url
 | PORT         | Port to run the server on            |
 | MONGO_URL    | MongoDB connection string            |
 | JWT_SECRET   | Secret key for JWT signing           |
+| NODE_ENV     | Environment (development/production) |
 | ROUNDS       | Bcrypt salt rounds for password hash |
 | FRONTEND_URL | Your Frontend Website URL (Optional) |
 
@@ -503,12 +505,10 @@ code = {
 {
   "success": false,
   "message": "...message...",
-  "error": {
-    "code": "...code[statusCode]...",
-    "details": "...error_details..."
-  },
+  "errorCode": "...code[statusCode]...",
   "statusCode": "...statusCode...",
-  "timestamp": "..."
+  "timestamp": "...",
+  "stack": "...Error Stack..."
 }
 ```
 
@@ -537,7 +537,8 @@ url_shortner_api/
 │ ├── url.controller.js
 │ └── user.controller.js
 ├── middleware/
-│ └── auth.middleware.js
+│ ├── auth.middleware.js
+│ └── errorHandler.middleware.js
 ├── models/
 │ ├── blacklist.model.js
 │ ├── url.model.js
@@ -551,7 +552,10 @@ url_shortner_api/
 │ └── user.service.js
 ├── public/
 │ ├── images/
-| │ └── favicon.png
+| │ ├── favicon.png
+| │ ├── github.svg
+| │ ├── linkedin.svg
+| │ └── mail.svg
 │ ├── javascripts/
 | │ └── homepage.js
 │ └── stylesheets/
@@ -561,6 +565,8 @@ url_shortner_api/
 │ ├── homepage.ejs
 │ └── notfound.ejs
 ├── utils/
+│ ├── appError.util.js
+│ ├── catchAsync.util.js
 │ ├── response.util.js
 │ └── setCookie.util.js
 └── ...
