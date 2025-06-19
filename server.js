@@ -1,12 +1,12 @@
 const app = require("./app");
 const connectDB = require("./db/mongodb.config");
 
-const port = process.env.PORT || 3000;
-
-if (!process.env.MONGO_URL) {
+if (!process.env.MONGO_URL || !process.env.JWT_SECRET) {
   console.error("Missing required environment variables.");
   process.exit(1);
 }
+
+const port = process.env.PORT || 3000;
 
 connectDB()
   .then(() => {
