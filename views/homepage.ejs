@@ -78,7 +78,7 @@ FRONTEND_URL=your_frontend_website_url
 
     <div class="endpoint">
       <div class="endpointTitle">Register a new user</div>
-      <span class="method">POST</span> <code>/user/register</code><br>
+      <span class="method">POST</span> <code>/auth/register</code><br>
       <strong>Request Body:</strong>
       <pre class="code-block"><code>{
   "firstName": "Neel",
@@ -115,7 +115,7 @@ FRONTEND_URL=your_frontend_website_url
 
     <div class="endpoint">
       <div class="endpointTitle">Login with email or username</div>
-      <span class="method">POST</span> <code>/user/login</code><br>
+      <span class="method">POST</span> <code>/auth/login</code><br>
       <strong>Request Body:</strong>
       <pre class="code-block"><code>{
   "email": "neelsshah2006@gmail.com",
@@ -154,7 +154,7 @@ FRONTEND_URL=your_frontend_website_url
 
     <div class="endpoint">
       <div class="endpointTitle">Logout user</div>
-      <span class="method">GET</span> <code>/user/logout</code><br>
+      <span class="method">GET</span> <code>/auth/logout</code><br>
       <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
       <strong>Response:</strong>
       <pre class="code-block"><code>{
@@ -425,6 +425,7 @@ FRONTEND_URL=your_frontend_website_url
   "timestamp": "...",
   "stack": "...Error Stack..."
 }</code></pre>
+    <h3>Stack will only be seen while on development mode (NODE_ENV=development)</h3>
   </section>
 
   <section>
@@ -440,7 +441,9 @@ url_shortner_api/
 │ └── mongodb.config.js
 ├── controllers/
 │ ├── url.controller.js
-│ └── user.controller.js
+│ ├── user.controller.js
+│ ├── auth.controller.js
+│ └── redirect.controller.js
 ├── middleware/
 │ ├── auth.middleware.js
 │ └── errorHandler.middleware.js
@@ -451,8 +454,10 @@ url_shortner_api/
 ├── routes/
 │ ├── redirect.routes.js
 │ ├── url.routes.js
-│ └── user.routes.js
+│ ├── user.routes.js
+│ └── auth.routes.js
 ├── services/
+│ ├── auth.service.js
 │ ├── url.service.js
 │ └── user.service.js
 ├── public/
@@ -473,6 +478,7 @@ url_shortner_api/
 │ ├── appError.util.js
 │ ├── catchAsync.util.js
 │ ├── response.util.js
+│ ├── nanoid6.util.js
 │ └── setCookie.util.js
 └── ...
     </code></pre>

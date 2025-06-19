@@ -6,27 +6,6 @@ const {
   NotFoundError,
 } = require("../utils/appError.util");
 
-const register = async ({ firstName, lastName, username, email, password }) => {
-  if (!firstName || !lastName || !username || !email || !password) {
-    throw new BadRequestError("All fields are required");
-  }
-
-  const hashedPassword = await userModel.hashPassword(password);
-
-  const user = await userModel.create({
-    fullName: { firstName, lastName },
-    username,
-    email,
-    password: hashedPassword,
-  });
-
-  const token = await user.generateAuthToken();
-  const userObj = user.toObject();
-  delete userObj.password;
-
-  return { token, user: userObj };
-};
-
 const updateProfile = async ({ firstName, lastName, username, id }) => {
   if (!firstName || !lastName) {
     throw new BadRequestError("First and last name are required");
@@ -38,6 +17,9 @@ const updateProfile = async ({ firstName, lastName, username, id }) => {
 
   const isUser = await userModel.findById(id);
   if (!isUser) throw new NotFoundError("User not found");
+
+  const isTaken = await userModel.findOne({ username: username });
+  if (isTaken) throw new ConflictError("This username is not available");
 
   const user = await userModel.findOneAndUpdate(
     { _id: id },
@@ -70,7 +52,6 @@ const changePassword = async ({ oldPassword, newPassword, id }) => {
 };
 
 module.exports = {
-  register,
   updateProfile,
   changePassword,
 };

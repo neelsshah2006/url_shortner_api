@@ -1,5 +1,5 @@
 const setCookie = (res, token) => {
-  return res.cookie("token", token, {
+  return res.cookie("accessToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

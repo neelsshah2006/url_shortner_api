@@ -90,7 +90,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 #### Register
 
-- **POST** `/user/register`
+- **POST** `/auth/register`
 - **Description:** Register a new user.
 - **Request Body:**
   ```json
@@ -133,7 +133,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 #### Login
 
-- **POST** `/user/login`
+- **POST** `/auth/login`
 - **Description:** Login with email or username.
 - **Request Body:**
   ```json
@@ -174,7 +174,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 #### Logout
 
-- **GET** `/user/logout`
+- **GET** `/auth/logout`
 - **Headers:** `Authorization: Bearer <token>` or cookie
 - **Description:** Logs out user and blacklists token.
 - **Response:**
@@ -493,6 +493,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 ### Sample Error Response Format
 
+```json
 code = {
 400: "BAD_REQUEST",
 401: "UNAUTHORIZED",
@@ -500,6 +501,7 @@ code = {
 409: "CONFLICT",
 500: "INTERNAL_SERVER_ERROR",
 };
+```
 
 ```json
 {
@@ -511,6 +513,8 @@ code = {
   "stack": "...Error Stack..."
 }
 ```
+
+- Stack will only be seen while on development mode (NODE_ENV=development)
 
 ## Authentication & Authorization
 
@@ -535,7 +539,9 @@ url_shortner_api/
 │ └── mongodb.config.js
 ├── controllers/
 │ ├── url.controller.js
-│ └── user.controller.js
+│ ├── user.controller.js
+│ ├── auth.controller.js
+│ └── redirect.controller.js
 ├── middleware/
 │ ├── auth.middleware.js
 │ └── errorHandler.middleware.js
@@ -546,8 +552,10 @@ url_shortner_api/
 ├── routes/
 │ ├── redirect.routes.js
 │ ├── url.routes.js
-│ └── user.routes.js
+│ ├── user.routes.js
+│ └── auth.routes.js
 ├── services/
+│ ├── auth.service.js
 │ ├── url.service.js
 │ └── user.service.js
 ├── public/
@@ -568,6 +576,7 @@ url_shortner_api/
 │ ├── appError.util.js
 │ ├── catchAsync.util.js
 │ ├── response.util.js
+│ ├── nanoid6.util.js
 │ └── setCookie.util.js
 └── ...
 

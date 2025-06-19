@@ -2,18 +2,15 @@ const express = require("express");
 const router = express.Router();
 const { body, query } = require("express-validator");
 const urlController = require("../controllers/url.controller");
-const authMiddleWare = require("../middleware/auth.middleware");
 
 router.post(
   "/shorten",
-  authMiddleWare,
   body("longUrl").exists().isURL().withMessage("Please provide a Valid URL"),
   urlController.shorten
 );
 
 router.patch(
   "/custom-url",
-  authMiddleWare,
   body("existingCode")
     .isString()
     .exists()
@@ -31,7 +28,6 @@ router.patch(
 
 router.get(
   "/stats",
-  authMiddleWare,
   query("shortCode")
     .exists()
     .isLength({ min: 6 })
@@ -41,7 +37,6 @@ router.get(
 
 router.delete(
   "/delete",
-  authMiddleWare,
   query("shortCode")
     .exists()
     .isLength({ min: 6 })

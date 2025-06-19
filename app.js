@@ -6,12 +6,14 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 
+const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const urlRoutes = require("./routes/url.routes");
 const redirectRoutes = require("./routes/redirect.routes");
 
 const errorHandler = require("./middleware/errorHandler.middleware");
 const { AppError } = require("./utils/appError.util");
+const authMiddleware = require("./middleware/auth.middleware");
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
@@ -42,8 +44,9 @@ app.use(cors(corsOptions));
 
 app.set("view engine", "ejs");
 
-app.use("/user", userRoutes);
-app.use("/url", urlRoutes);
+app.use("/auth", authRoutes);
+app.use("/user", authMiddleware, userRoutes);
+app.use("/url", authMiddleware, urlRoutes);
 app.use(redirectRoutes);
 
 app.use((req, res, next) => {
