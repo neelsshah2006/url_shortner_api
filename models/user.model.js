@@ -37,15 +37,6 @@ const userSchema = mongoose.Schema(
       required: true,
       select: false,
     },
-    links: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "url",
-        },
-      ],
-      default: [],
-    },
   },
   { timestamps: true }
 );

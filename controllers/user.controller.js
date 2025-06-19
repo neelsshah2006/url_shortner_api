@@ -1,7 +1,6 @@
 const { validationResult } = require("express-validator");
 const userService = require("../services/user.service");
-const userModel = require("../models/user.model");
-const blacklistModel = require("../models/blacklist.model");
+const urlModel = require("../models/url.model");
 const { BadRequestError } = require("../utils/appError.util");
 const { sendSuccess } = require("../utils/response.util");
 const catchAsync = require("../utils/catchAsync.util");
@@ -13,12 +12,12 @@ module.exports.getProfile = catchAsync(async (req, res) => {
 
 // Get links
 module.exports.getLinks = catchAsync(async (req, res) => {
-  const user = await userModel.findById(req.user._id).populate({
-    path: "links",
-    select: "shortCode longUrl visitCount createdAt",
-  });
+  const links = await urlModel
+    .find({ user: req.user._id })
+    .select("shortCode longUrl visitCount createdAt")
+    .sort({ createdAt: -1 });
 
-  sendSuccess(res, "Links Sent Successfully", { links: user.links }, 200);
+  sendSuccess(res, "Links Sent Successfully", { links }, 200);
 });
 
 // Update Profile

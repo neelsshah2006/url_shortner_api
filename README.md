@@ -118,7 +118,6 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "neelsshah2006",
           "email": "neelsshah2006@gmail.com",
-          "links": [],
           "_id": "...",
           "createdAt": "...",
           "updatedAt": "...",
@@ -160,7 +159,6 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "neelsshah2006",
           "email": "neelsshah2006@gmail.com",
-          "links": ["...", "..."],
           "createdAt": "...",
           "updatedAt": "...",
           "__v": 0
@@ -215,7 +213,6 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "neelsshah2006",
           "email": "neelsshah2006@gmail.com",
-          "links": ["...", "..."],
           "createdAt": "...",
           "updatedAt": "...",
           "__v": 0
@@ -251,7 +248,6 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "mokshshah",
           "email": "neelsshah2006@gmail.com",
-          "links": ["...", "..."],
           "createdAt": "...",
           "updatedAt": "...",
           "__v": 0
@@ -287,7 +283,6 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "mokshshah",
           "email": "neelsshah2006@gmail.com",
-          "links": ["...", "..."],
           "createdAt": "...",
           "updatedAt": "...",
           "__v": 0

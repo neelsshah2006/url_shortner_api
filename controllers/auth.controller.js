@@ -19,7 +19,7 @@ module.exports.register = catchAsync(async (req, res) => {
   if (emailExists) throw new ConflictError("Email already exists");
 
   const usernameExists = await userModel.findOne({ username });
-  if (usernameExists) throw new ConflictError("Username already taken");
+  if (usernameExists) throw new ConflictError("Username not available");
 
   const registerData = await authService.register({
     firstName,

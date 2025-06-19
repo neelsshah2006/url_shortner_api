@@ -1,6 +1,5 @@
 const urlModel = require("../models/url.model");
 const nanoid6 = require("../utils/nanoid6.util");
-const userModel = require("../models/user.model");
 const {
   BadRequestError,
   NotFoundError,
@@ -21,11 +20,19 @@ const shorten = async ({ longUrl, id }) => {
     shortCode,
   });
 
-  const user = await userModel.findById(id);
-  if (!user) throw new NotFoundError("User not found");
+  return url;
+};
 
-  user.links.push(url._id);
-  await user.save();
+const getStats = async ({ shortCode, id }) => {
+  const url = await urlModel.findOne({ shortCode });
+  if (!url)
+    throw new NotFoundError("No URL is linked to the provided ShortCode");
+
+  if (String(url.user) !== String(id)) {
+    throw new UnauthorizedError(
+      "User does not have permission to access this URL"
+    );
+  }
 
   return url;
 };
@@ -63,7 +70,21 @@ const createCustomUrl = async ({ existingCode, customCode, id }) => {
   return updatedUrl;
 };
 
+const deleteUrl = async ({ shortCode, id }) => {
+  const url = await urlModel.findOne({ shortCode });
+  if (!url) throw new NotFoundError("No URL found for this ShortCode");
+
+  if (String(url.user) !== String(id)) {
+    throw new UnauthorizedError("You can only delete URLs you created");
+  }
+
+  const deletedUrl = await urlModel.findOneAndDelete({ shortCode });
+  return deletedUrl;
+};
+
 module.exports = {
   shorten,
+  getStats,
   createCustomUrl,
+  deleteUrl,
 };
