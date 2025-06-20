@@ -35,7 +35,11 @@ module.exports.updateProfile = catchAsync(async (req, res) => {
     id,
   });
 
-  sendSuccess(res, "Profile Updated Successfully", { user }, 200);
+  const userObj = await user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
+
+  sendSuccess(res, "Profile Updated Successfully", { user: userObj }, 200);
 });
 
 // Change Password
@@ -54,5 +58,9 @@ module.exports.changePassword = catchAsync(async (req, res) => {
     id: req.user._id,
   });
 
-  sendSuccess(res, "Password Changed Successfully", { user }, 200);
+  const userObj = await user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
+
+  sendSuccess(res, "Password Changed Successfully", { user: userObj }, 200);
 });

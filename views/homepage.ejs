@@ -19,9 +19,11 @@
       <button id="modeToggle">🌙</button>
     </div>
   </div>
-  <p>A minimal and efficient RESTful API for shortening URLs. This backend service allows users to register,
-    authenticate, create, manage, and track shortened links with robust authentication and statistics. Built with
-    Node.js, Express, and MongoDB.</p>
+  <p>A minimal and efficient RESTful API for shortening URLs with <strong>advanced session management</strong> and
+    <strong>high-performance authentication</strong>. This backend service allows users to register,
+    authenticate, create, manage, and track shortened links with enterprise-grade security.
+    Built with Node.js, Express, and MongoDB.
+  </p>
   <div>API is currently openly availabe. Each of the following API Endpoint is currently live on
     the domain: <a href="https://url-shortner-api-k63s.onrender.com/">https://url-shortner-api-k63s.onrender.com</a>
   </div>
@@ -30,14 +32,17 @@
     <h2>🚀 Features</h2>
     <ul>
       <li>User registration and authentication (JWT & cookies)</li>
-      <li>Secure password hashing</li>
+      <li><strong>🔒 Advanced Session Management:</strong> Configurable device limit with automatic cleanup</li>
+      <li>Secure password hashing with bcrypt</li>
       <li>URL shortening with unique short codes</li>
       <li>Creation and Editing of Custom URLs</li>
-      <li>Redirection to original URLs</li>
+      <li>Redirection to original URLs with visit tracking</li>
       <li>URL statistics (visit count, creation date)</li>
       <li>User profile management</li>
       <li>User-specific link management</li>
-      <li>Token blacklisting for secure logout</li>
+      <li><strong>🚀 Automatic Token Cleanup:</strong> Expired tokens removed automatically</li>
+      <li><strong>🛡️ Backward Compatible:</strong> Seamless migration from old token formats</li>
+      <li>Clean API documentation and comprehensive error handling</li>
     </ul>
   </section>
 
@@ -65,12 +70,25 @@ npm install</code></pre>
     <h2>🔐 Environment Variables</h2>
     <pre class="code-block"><code>PORT=5000
 MONGO_URL=mongodb://127.0.0.1:27017/url_shortner
-JWT_SECRET=your_jwt_secret
+ACCESS_TOKEN_SECRET=your_access_token_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
+ACCESS_TOKEN_EXPIRY=15m
+REFRESH_TOKEN_EXPIRY=7d
 NODE_ENV=development
 ROUNDS=15
+MAX_DEVICES=5
 FRONTEND_URL=your_frontend_website_url
 </code></pre>
-    <p>FRONTEND_URL is optional. If not provided, the API will accept requests from all websites</p>
+    <div class="important-notes">
+      <h3>📋 Important Notes:</h3>
+      <ul>
+        <li><code>ACCESS_TOKEN_SECRET</code> and <code>REFRESH_TOKEN_SECRET</code> are <strong>required</strong> for JWT
+          authentication</li>
+        <li><code>MAX_DEVICES</code> controls how many concurrent sessions a user can have (default: 5)</li>
+        <li><code>FRONTEND_URL</code> is optional - if not provided, API will accept requests from all websites</li>
+        <li>When a user exceeds the device limit, the oldest session is automatically removed</li>
+      </ul>
+    </div>
   </section>
 
   <section>
@@ -154,6 +172,7 @@ FRONTEND_URL=your_frontend_website_url
       <div class="endpointTitle">Logout user</div>
       <span class="method">GET</span> <code>/auth/logout</code><br>
       <span class="headers">Headers:</span> <code>Authorization: "Bearer <%= "<token>" %>"</code><br>
+      <p><strong>Description:</strong> Logs out user and removes refresh token from active sessions.</p>
       <strong>Response:</strong>
       <pre class="code-block"><code>{
   "success": true,
@@ -411,6 +430,46 @@ FRONTEND_URL=your_frontend_website_url
   </section>
 
   <section>
+    <h2>🚀 Performance & Session Management</h2>
+
+    <div class="performance-section">
+      <h3>⚡ High-Performance Authentication</h3>
+      <ul>
+        <li><strong>Token Validation:</strong> Uses <code>jwt.decode()</code> for faster parsing vs
+          <code>jwt.verify()</code>
+        </li>
+        <li><strong>Bulk Database Operations:</strong> Efficient cleanup with <code>bulkWrite()</code> operations</li>
+        <li><strong>Automatic Cleanup:</strong> Expired tokens removed without manual intervention</li>
+      </ul>
+    </div>
+
+    <div class="session-section">
+      <h3>🔒 Advanced Session Management</h3>
+      <ul>
+        <li><strong>Dual Token System:</strong> Access tokens (short-lived) + Refresh tokens (long-lived)</li>
+        <li><strong>Device Limit Control:</strong> Configurable maximum concurrent sessions per user (default: 5)</li>
+        <li><strong>Automatic Session Cleanup:</strong> Expired tokens removed automatically for optimal performance
+        </li>
+        <li><strong>Multi-Device Support:</strong> Users can be logged in on up to <code>MAX_DEVICES</code> devices
+          simultaneously</li>
+        <li><strong>Session Termination:</strong> When limit exceeded, oldest session automatically terminated</li>
+        <li><strong>Backward Compatible:</strong> Seamless migration from old token formats</li>
+      </ul>
+    </div>
+
+    <div class="security-section">
+      <h3>🛡️ Security Features</h3>
+      <ul>
+        <li><strong>Password Security:</strong> Bcrypt hashing with configurable salt rounds</li>
+        <li><strong>Token Validation:</strong> Cryptographic verification for authentication</li>
+        <li><strong>Session Tracking:</strong> Each session tracked with creation timestamps</li>
+        <li><strong>Secure Storage:</strong> HTTP-only cookies with proper security headers</li>
+        <li><strong>CORS Protection:</strong> Configurable cross-origin resource sharing</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
     <h2>⚠️ Error Response Format</h2>
     <pre class="code-block"><code>{
   "success": false,
@@ -443,7 +502,6 @@ url_shortner_api/
 │ ├── auth.middleware.js
 │ └── errorHandler.middleware.js
 ├── models/
-│ ├── blacklist.model.js
 │ ├── url.model.js
 │ └── user.model.js
 ├── routes/
@@ -474,6 +532,7 @@ url_shortner_api/
 │ ├── catchAsync.util.js
 │ ├── response.util.js
 │ ├── nanoid6.util.js
+│ ├── refreshTokenValidator.util.js
 │ └── setCookie.util.js
 └── ...
     </code></pre>

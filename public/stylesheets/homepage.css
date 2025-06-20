@@ -190,6 +190,63 @@ body.dark-mode .contact button img {
     filter: invert();
 }
 
+/* Performance & Session Management Sections */
+.performance-section,
+.session-section,
+.security-section {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+body.dark-mode .performance-section,
+body.dark-mode .session-section,
+body.dark-mode .security-section {
+    background-color: #1a1a1a;
+    border-left: 4px solid var(--primary-color);
+}
+
+.performance-section h3,
+.session-section h3,
+.security-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.important-notes {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+body.dark-mode .important-notes {
+    background-color: #2d2a1f;
+    border: 1px solid #5a5a2a;
+}
+
+.important-notes h3 {
+    color: #856404;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+body.dark-mode .important-notes h3 {
+    color: #ffd93d;
+}
+
+.important-notes ul {
+    margin-bottom: 0;
+}
+
+.important-notes li {
+    margin-bottom: 0.3rem;
+}
+
 @media (prefers-color-scheme: dark) {
     body {
         background-color: var(--bg-dark);

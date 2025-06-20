@@ -9,15 +9,17 @@ API is currently openly availabe. Each of the following API Endpoint is currentl
 ## Features
 
 - User registration and authentication (JWT & cookies)
-- Secure password hashing
+- **🔒 Advanced Session Management**: Configurable device limit with automatic cleanup
+- Secure password hashing with bcrypt
 - URL shortening with unique short codes
 - Creation and Editing of Custom URLs
-- Redirection to original URLs
+- Redirection to original URLs with visit tracking
 - URL statistics (visit count, creation date)
 - User profile management
 - User-specific link management
-- Token blacklisting for secure logout
-- Clean API documentation and error handling
+- **🚀 Automatic Token Cleanup**: Expired tokens removed automatically
+- **🛡️ Backward Compatible**: Seamless migration from old token formats
+- Clean API documentation and comprehensive error handling
 
 ---
 
@@ -55,22 +57,35 @@ Create a `.env` file in the root directory:
 ```env
 PORT=5000
 MONGO_URL=mongodb://127.0.0.1:27017/url_shortner
-JWT_SECRET=your_jwt_secret
+ACCESS_TOKEN_SECRET=your_access_token_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
+ACCESS_TOKEN_EXPIRY=15m
+REFRESH_TOKEN_EXPIRY=7d
 NODE_ENV=development
 ROUNDS=15
+MAX_DEVICES=5
 FRONTEND_URL=your_frontend_website_url
 ```
 
-| Variable     | Description                          |
-| ------------ | ------------------------------------ |
-| PORT         | Port to run the server on            |
-| MONGO_URL    | MongoDB connection string            |
-| JWT_SECRET   | Secret key for JWT signing           |
-| NODE_ENV     | Environment (development/production) |
-| ROUNDS       | Bcrypt salt rounds for password hash |
-| FRONTEND_URL | Your Frontend Website URL (Optional) |
+| Variable             | Description                          | Default |
+| -------------------- | ------------------------------------ | ------- |
+| PORT                 | Port to run the server on            | 3000    |
+| MONGO_URL            | MongoDB connection string            | -       |
+| ACCESS_TOKEN_SECRET  | Secret key for access token signing  | -       |
+| REFRESH_TOKEN_SECRET | Secret key for refresh token signing | -       |
+| ACCESS_TOKEN_EXPIRY  | Access token expiration time         | -       |
+| REFRESH_TOKEN_EXPIRY | Refresh token expiration time        | -       |
+| NODE_ENV             | Environment (development/production) | -       |
+| ROUNDS               | Bcrypt salt rounds for password hash | 10      |
+| MAX_DEVICES          | Maximum concurrent devices per user  | 5       |
+| FRONTEND_URL         | Your Frontend Website URL (Optional) | -       |
 
-FRONTEND_URL is an optional environment variable. If not provided, API will accept requests from all websites
+**Important Notes:**
+
+- `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` are **required** for JWT authentication
+- `MAX_DEVICES` controls how many concurrent sessions a user can have (default: 5)
+- `FRONTEND_URL` is optional - if not provided, API will accept requests from all websites
+- When a user exceeds the device limit, the oldest session is automatically removed
 
 ### Running the Project
 
@@ -109,23 +124,20 @@ The server will start on `http://localhost:5000` (or your specified port in the 
       "success": true,
       "message": "User Registered Successfully",
       "data": {
-        "token": "...JWT_Token...",
-        "user": {
-          "fullName": {
-            "firstName": "Neel",
-            "lastName": "Shah",
-            "_id": "..."
-          },
-          "username": "neelsshah2006",
-          "email": "neelsshah2006@gmail.com",
-          "_id": "...",
-          "createdAt": "...",
-          "updatedAt": "...",
-          "__v": 0
-        }
+        "fullName": {
+          "firstName": "Neel",
+          "lastName": "Shah",
+          "_id": "..."
+        },
+        "username": "neelsshah2006",
+        "email": "neelsshah2006@gmail.com",
+        "_id": "...",
+        "createdAt": "2025-06-20T16:48:02.612Z",
+        "updatedAt": "2025-06-20T16:48:02.659Z",
+        "__v": 1
       },
       "statusCode": 201,
-      "timestamp": "..."
+      "timestamp": "2025-06-20T16:48:02.678Z"
     }
     ```
   - `400/409/500` with error message
@@ -149,23 +161,20 @@ The server will start on `http://localhost:5000` (or your specified port in the 
       "success": true,
       "message": "User Login Successful",
       "data": {
-        "token": "...JWT_Token...",
-        "user": {
-          "_id": "...",
-          "fullName": {
-            "firstName": "Neel",
-            "lastName": "Shah",
-            "_id": "..."
-          },
-          "username": "neelsshah2006",
-          "email": "neelsshah2006@gmail.com",
-          "createdAt": "...",
-          "updatedAt": "...",
-          "__v": 0
-        }
+        "_id": "...",
+        "fullName": {
+          "firstName": "Neel",
+          "lastName": "Shah",
+          "_id": "..."
+        },
+        "username": "neelsshah2006",
+        "email": "neelsshah2006@gmail.com",
+        "createdAt": "2025-06-20T16:48:02.612Z",
+        "updatedAt": "2025-06-20T16:49:38.295Z",
+        "__v": 2
       },
       "statusCode": 200,
-      "timestamp": "..."
+      "timestamp": "2025-06-20T16:49:38.302Z"
     }
     ```
   - `400/401/404/500` with error message
@@ -173,8 +182,8 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 #### Logout
 
 - **GET** `/auth/logout`
-- **Headers:** `Authorization: Bearer <token>` or cookie
-- **Description:** Logs out user and blacklists token.
+- **Authentication:** Cookie
+- **Description:** Logs out user and removes refresh token from active sessions.
 - **Response:**
   - `200 OK` with success message
     ```json
@@ -195,7 +204,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 #### Get Profile
 
 - **GET** `/user/profile`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Description:** Get current user's profile.
 - **Response:**
   - `200 OK` with user profile
@@ -213,13 +222,13 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "neelsshah2006",
           "email": "neelsshah2006@gmail.com",
-          "createdAt": "...",
-          "updatedAt": "...",
-          "__v": 0
+          "createdAt": "2025-06-20T16:48:02.612Z",
+          "updatedAt": "2025-06-20T16:49:38.295Z",
+          "__v": 2
         }
       },
       "statusCode": 200,
-      "timestamp": "2025-06-16T12:23:08.270Z"
+      "timestamp": "2025-06-20T16:52:02.543Z"
     }
     ```
   - `401/500` with error message
@@ -227,7 +236,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 #### Update Profile
 
 - **PATCH** `/user/update-profile`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Body:**
   ```json
   { "firstName": "Moksh", "lastName": "Shah", "username": "mokshshah" }
@@ -248,13 +257,13 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "mokshshah",
           "email": "neelsshah2006@gmail.com",
-          "createdAt": "...",
-          "updatedAt": "...",
-          "__v": 0
+          "createdAt": "2025-06-20T16:48:02.612Z",
+          "updatedAt": "2025-06-20T16:54:31.881Z",
+          "__v": 2
         }
       },
       "statusCode": 200,
-      "timestamp": "..."
+      "timestamp": "2025-06-20T16:54:31.888Z"
     }
     ```
   - `400/401/500` with error message
@@ -262,7 +271,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 #### Change Password
 
 - **PATCH** `/user/change-password`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Body:**
   ```json
   { "oldPassword": "Password@123", "newPassword": "NewPass@456" }
@@ -283,13 +292,13 @@ The server will start on `http://localhost:5000` (or your specified port in the 
           },
           "username": "mokshshah",
           "email": "neelsshah2006@gmail.com",
-          "createdAt": "...",
-          "updatedAt": "...",
-          "__v": 0
+          "createdAt": "2025-06-20T16:48:02.612Z",
+          "updatedAt": "2025-06-20T16:58:03.667Z",
+          "__v": 2
         }
       },
       "statusCode": 200,
-      "timestamp": "..."
+      "timestamp": "2025-06-20T16:58:03.690Z"
     }
     ```
   - `400/401/500` with error message
@@ -297,7 +306,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 #### Get User Links
 
 - **GET** `/user/get-links`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Response:**
   - `200 OK` with list of user's URLs
     ```json
@@ -308,22 +317,22 @@ The server will start on `http://localhost:5000` (or your specified port in the 
         "links": [
           {
             "_id": "...",
-            "longUrl": "https://www.google.com",
-            "shortCode": "xxxxxx",
-            "visitCount": 7,
-            "createdAt": "..."
+            "longUrl": "https://example.com",
+            "shortCode": "4p9FIv",
+            "visitCount": 0,
+            "createdAt": "2025-06-20T16:58:48.439Z"
           },
           {
             "_id": "...",
-            "longUrl": "https://example.com",
-            "shortCode": "xxxxxx",
-            "visitCount": 2,
-            "createdAt": "..."
+            "longUrl": "https://www.google.com",
+            "shortCode": "google",
+            "visitCount": 0,
+            "createdAt": "2025-06-20T16:55:52.757Z"
           }
         ]
       },
       "statusCode": 200,
-      "timestamp": "2025-06-16T12:35:10.937Z"
+      "timestamp": "2025-06-20T17:01:31.857Z"
     }
     ```
   - `401/500` with error message
@@ -335,7 +344,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 #### Shorten URL
 
 - **POST** `/url/shorten`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Body:**
   ```json
   { "longUrl": "https://example.com" }
@@ -348,18 +357,18 @@ The server will start on `http://localhost:5000` (or your specified port in the 
       "message": "URL Shortened Successfully",
       "data": {
         "shortUrl": {
-          "user": "...User_ID...",
+          "user": "...",
           "longUrl": "https://example.com",
-          "shortCode": "xxxxxx",
+          "shortCode": "4p9FIv",
           "visitCount": 0,
           "_id": "...",
-          "createdAt": "...",
-          "updatedAt": "...",
+          "createdAt": "2025-06-20T16:58:48.439Z",
+          "updatedAt": "2025-06-20T16:58:48.439Z",
           "__v": 0
         }
       },
       "statusCode": 201,
-      "timestamp": "..."
+      "timestamp": "2025-06-20T16:58:48.444Z"
     }
     ```
   - `400/401/500` with error message
@@ -367,12 +376,12 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 #### Change Shortened URL to a custom URL or Update a custom URL
 
 - **PATCH** `/url/custom-url`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Body:**
   ```json
   {
     "existingCode": "xxxxxx",
-    "customCode": "example"
+    "customCode": "google"
   }
   ```
 - `customCode` must be atleast 6 characters long
@@ -381,21 +390,21 @@ The server will start on `http://localhost:5000` (or your specified port in the 
     ```json
     {
       "success": true,
-      "message": "URL Shortened Successfully",
+      "message": "Custom Code attached successfully",
       "data": {
         "shortUrl": {
-          "user": "...User_ID...",
-          "longUrl": "https://example.com",
-          "shortCode": "example",
-          "visitCount": 0,
           "_id": "...",
-          "createdAt": "...",
-          "updatedAt": "...",
+          "user": "...",
+          "longUrl": "https://www.google.com",
+          "shortCode": "google",
+          "visitCount": 0,
+          "createdAt": "2025-06-20T16:55:52.757Z",
+          "updatedAt": "2025-06-20T17:00:36.942Z",
           "__v": 0
         }
       },
-      "statusCode": 201,
-      "timestamp": "..."
+      "statusCode": 200,
+      "timestamp": "2025-06-20T17:00:36.952Z"
     }
     ```
   - `400/401/404/409/500` with error message
@@ -404,7 +413,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 - **GET** `/url/stats`
 - **Params** `shortCode=xxxxxx`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Response:**
   - `200 OK` with URL stats
     ```json
@@ -414,17 +423,17 @@ The server will start on `http://localhost:5000` (or your specified port in the 
       "data": {
         "shortUrl": {
           "_id": "...",
-          "user": "...User_ID..",
-          "longUrl": "https://example.com",
-          "shortCode": "xxxxxx",
-          "visitCount": 10,
-          "createdAt": "...",
-          "updatedAt": "...",
+          "user": "...",
+          "longUrl": "https://www.google.com",
+          "shortCode": "google",
+          "visitCount": 0,
+          "createdAt": "2025-06-20T16:55:52.757Z",
+          "updatedAt": "2025-06-20T17:00:36.942Z",
           "__v": 0
         }
       },
       "statusCode": 200,
-      "timestamp": "..."
+      "timestamp": "2025-06-20T17:03:57.905Z"
     }
     ```
   - `400/401/404/500` with error message
@@ -433,7 +442,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 - **DELETE** `/url/delete`
 - **Params** `shortCode=xxxxxx`
-- **Headers:** `Authorization: Bearer <token>` or cookie
+- **Authentication:** Cookie
 - **Response:**
   - `200 OK` with deletion result
     ```json
@@ -443,17 +452,17 @@ The server will start on `http://localhost:5000` (or your specified port in the 
       "data": {
         "deletedUrl": {
           "_id": "...",
-          "user": "...User_ID...",
-          "longUrl": "https://example.com",
-          "shortCode": "xxxxxx",
-          "visitCount": 10,
-          "createdAt": "...",
-          "updatedAt": "...",
+          "user": "...",
+          "longUrl": "https://www.google.com",
+          "shortCode": "google",
+          "visitCount": 0,
+          "createdAt": "2025-06-20T16:55:52.757Z",
+          "updatedAt": "2025-06-20T17:00:36.942Z",
           "__v": 0
         }
       },
       "statusCode": 200,
-      "timestamp": "..."
+      "timestamp": "2025-06-20T17:04:36.912Z"
     }
     ```
   - `400/401/404/500` with error message
@@ -513,10 +522,28 @@ code = {
 
 ## Authentication & Authorization
 
-- **JWT** tokens are issued on registration/login and stored as HTTP-only cookies.
-- Tokens must be sent via `Authorization: Bearer <token>` or cookie header or as a cookie for protected endpoints.
-- Logout blacklists the token for 24 hours.
-- Passwords are securely hashed with bcrypt.
+### 🔐 **Advanced Session Management**
+
+- **Dual Token System**: Access tokens (short-lived) + Refresh tokens (long-lived)
+- **Device Limit Control**: Configurable maximum concurrent sessions per user (default: 5)
+- **Automatic Session Cleanup**: Expired tokens removed automatically for optimal performance
+- **Secure Storage**: Tokens stored as HTTP-only cookies with proper security headers
+- **Backward Compatible**: Seamless migration from old token formats
+
+### 🛡️ **Security Features**
+
+- **Password Security**: Bcrypt hashing with configurable salt rounds
+- **Token Validation**: Cryptographic verification for authentication
+- **Session Management**: Oldest sessions automatically removed when device limit exceeded
+- **Error Handling**: Comprehensive error responses with proper HTTP status codes
+- **CORS Protection**: Configurable cross-origin resource sharing
+
+### 📱 **Multi-Device Support**
+
+- Users can be logged in on up to `MAX_DEVICES` devices simultaneously
+- When the limit is exceeded, the oldest session is automatically terminated
+- Each session is tracked with creation timestamps
+- Automatic cleanup of expired sessions maintains database efficiency
 
 ---
 
@@ -541,7 +568,6 @@ url_shortner_api/
 │ ├── auth.middleware.js
 │ └── errorHandler.middleware.js
 ├── models/
-│ ├── blacklist.model.js
 │ ├── url.model.js
 │ └── user.model.js
 ├── routes/
@@ -572,10 +598,35 @@ url_shortner_api/
 │ ├── catchAsync.util.js
 │ ├── response.util.js
 │ ├── nanoid6.util.js
+│ ├── refreshTokenValidator.util.js
 │ └── setCookie.util.js
 └── ...
 
 ```
+
+---
+
+## 🚀 Performance & Optimization
+
+### **High-Performance Authentication**
+
+- **Token Validation**: Uses `jwt.decode()` for faster parsing vs `jwt.verify()`
+- **Bulk Database Operations**: Efficient cleanup with `bulkWrite()` operations
+- **Automatic Cleanup**: Expired tokens removed without manual intervention
+
+### **Device Management**
+
+- **Configurable Limits**: Set `MAX_DEVICES` environment variable (default: 5)
+- **Automatic Session Management**: Oldest sessions removed when limit exceeded
+- **Memory Efficient**: No token accumulation with automatic cleanup
+- **Backward Compatible**: Handles migration from old token formats seamlessly
+
+### **Database Optimization**
+
+- **Indexed Fields**: Optimized queries with proper indexing
+- **Bulk Operations**: Reduced database round trips
+- **Efficient Cleanup**: Background token cleanup processes
+- **Schema Evolution**: Smooth migration from string to object token storage
 
 ---
 

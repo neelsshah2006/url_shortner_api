@@ -2,8 +2,8 @@ const userModel = require("../models/user.model");
 const {
   BadRequestError,
   UnauthorizedError,
-  NotFoundError,
 } = require("../utils/appError.util");
+const validateRefreshToken = require("../utils/refreshTokenValidator.util");
 
 const register = async ({ firstName, lastName, username, email, password }) => {
   if (!firstName || !lastName || !username || !email || !password) {
@@ -22,6 +22,7 @@ const register = async ({ firstName, lastName, username, email, password }) => {
   const token = await user.generateAuthToken();
   const userObj = user.toObject();
   delete userObj.password;
+  delete userObj.refreshToken;
 
   return { token, user: userObj };
 };
@@ -34,14 +35,37 @@ const login = async ({ email, username, password }) => {
   const isMatch = await user.comparePassword(password);
   if (!isMatch) throw new UnauthorizedError("Invalid Credentials");
 
-  const token = user.generateAuthToken();
-  const userObj = user.toObject();
+  await user.cleanupExpiredTokens(true);
+
+  const token = await user.generateAuthToken();
+  const userObj = await user.toObject();
   delete userObj.password;
+  delete userObj.refreshToken;
 
   return { token, user: userObj };
+};
+
+const logout = async ({ refreshToken }) => {
+  if (!refreshToken) {
+    throw new BadRequestError("Refresh token is required");
+  }
+
+  try {
+    const user = await validateRefreshToken(refreshToken);
+    await user.removeRefreshToken(refreshToken);
+    return { message: "Logged out successfully" };
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      throw new UnauthorizedError("Refresh token expired");
+    } else if (error.name === "JsonWebTokenError") {
+      throw new UnauthorizedError("Invalid refresh token");
+    }
+    throw error;
+  }
 };
 
 module.exports = {
   register,
   login,
+  logout,
 };

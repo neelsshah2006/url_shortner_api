@@ -4,7 +4,6 @@ const userModel = require("../models/user.model");
 const authService = require("../services/auth.service");
 const setCookie = require("../utils/setCookie.util");
 const { sendSuccess } = require("../utils/response.util");
-const blacklistModel = require("../models/blacklist.model");
 const { BadRequestError, ConflictError } = require("../utils/appError.util");
 
 // Register
@@ -21,7 +20,10 @@ module.exports.register = catchAsync(async (req, res) => {
   const usernameExists = await userModel.findOne({ username });
   if (usernameExists) throw new ConflictError("Username not available");
 
-  const registerData = await authService.register({
+  const {
+    token: { accessToken, refreshToken },
+    user,
+  } = await authService.register({
     firstName,
     lastName,
     username,
@@ -29,8 +31,9 @@ module.exports.register = catchAsync(async (req, res) => {
     password,
   });
 
-  setCookie(res, registerData.token);
-  sendSuccess(res, "User Registered Successfully", registerData, 201);
+  setCookie(res, "accessToken", accessToken);
+  setCookie(res, "refreshToken", refreshToken);
+  sendSuccess(res, "User Registered Successfully", user, 201);
 });
 
 // Login
@@ -42,18 +45,23 @@ module.exports.login = catchAsync(async (req, res) => {
   if (!email && !username)
     throw new BadRequestError("Email or Username is required");
 
-  const loginData = await authService.login({ email, username, password });
-  setCookie(res, loginData.token);
-  sendSuccess(res, "User Login Successful", loginData, 200);
+  const {
+    token: { accessToken, refreshToken },
+    user,
+  } = await authService.login({ email, username, password });
+  setCookie(res, "accessToken", accessToken);
+  setCookie(res, "refreshToken", refreshToken);
+  sendSuccess(res, "User Login Successful", user, 200);
 });
 
 // Logout
 module.exports.logout = catchAsync(async (req, res) => {
-  const token =
-    req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
-  if (!token) throw new BadRequestError("Token is required");
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) throw new BadRequestError("RefreshToken is required");
 
-  await blacklistModel.create({ token });
-  res.clearCookie("token");
-  sendSuccess(res, "Logged Out Successfully", "Logged Out", 200);
+  const {message} = await authService.logout({ refreshToken });
+
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  sendSuccess(res, message, "Logged Out", 200);
 });

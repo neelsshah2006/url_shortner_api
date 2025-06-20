@@ -1,9 +1,9 @@
-const setCookie = (res, token) => {
-  return res.cookie("accessToken", token, {
+const setCookie = (res, tokenName, token) => {
+  return res.cookie(tokenName, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
