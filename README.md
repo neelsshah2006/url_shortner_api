@@ -497,7 +497,7 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 ### Sample Error Response Format
 
-```json
+```
 code = {
 400: "BAD_REQUEST",
 401: "UNAUTHORIZED",
