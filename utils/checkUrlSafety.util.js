@@ -6,7 +6,7 @@ const checkUrlSafety = async (url, first = false) => {
   const body = {
     client: {
       clientId: process.env.GOOGLE_SAFE_BROWSING_CLIENT_ID,
-      clientVersion: "1.0.0",
+      clientVersion: process.env.GOOGLE_SAFE_BROWSING_CLIENT_VERSION,
     },
     threatInfo: {
       threatTypes: [

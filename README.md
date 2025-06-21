@@ -89,23 +89,30 @@ NODE_ENV=development
 ROUNDS=15
 MAX_DEVICES=5
 FRONTEND_URL=your_frontend_website_url
+GOOGLE_SAFE_BROWSING_API_KEY=your_google_api_key
+GOOGLE_SAFE_BROWSING_CLIENT_ID="url-shortener"
+GOOGLE_SAFE_BROWSING_CLIENT_VERSION="1.0.0"
 ```
 
-| Variable             | Description                                 | Example     |
-| -------------------- | ------------------------------------------- | ----------- |
-| PORT                 | Port to run the server on                   | 5000        |
-| MONGO_URL            | MongoDB connection string                   | -           |
-| ACCESS_TOKEN_SECRET  | Secret key for access token signing         | -           |
-| REFRESH_TOKEN_SECRET | Secret key for refresh token signing        | -           |
-| ACCESS_TOKEN_EXPIRY  | Access token expiration time                | 15m         |
-| REFRESH_TOKEN_EXPIRY | Refresh token expiration time               | 7d          |
-| NODE_ENV             | Environment (development/production)        | development |
-| ROUNDS               | Bcrypt salt rounds for password hash        | 15          |
-| MAX_DEVICES          | Maximum concurrent devices per user         | 5           |
-| FRONTEND_URL         | Allowed frontend origin for CORS (optional) |             |
+| Variable                            | Description                                               | Example       |
+| ----------------------------------- | --------------------------------------------------------- | ------------- |
+| PORT                                | Port to run the server on                                 | 5000          |
+| MONGO_URL                           | MongoDB connection string                                 | -             |
+| ACCESS_TOKEN_SECRET                 | Secret key for access token signing                       | -             |
+| REFRESH_TOKEN_SECRET                | Secret key for refresh token signing                      | -             |
+| ACCESS_TOKEN_EXPIRY                 | Access token expiration time                              | 15m           |
+| REFRESH_TOKEN_EXPIRY                | Refresh token expiration time                             | 7d            |
+| NODE_ENV                            | Environment (development/production)                      | development   |
+| ROUNDS                              | Bcrypt salt rounds for password hash                      | 15            |
+| MAX_DEVICES                         | Maximum concurrent devices per user                       | 5             |
+| FRONTEND_URL                        | Allowed frontend origin for CORS (optional)               |               |
+| GOOGLE_SAFE_BROWSING_API_KEY        | Your Google Console API key with SafeBrowsing API Enabled |               |
+| GOOGLE_SAFE_BROWSING_CLIENT_ID      | Google Client Id                                          | url-shortener |
+| GOOGLE_SAFE_BROWSING_CLIENT_VERSION | Google Client Version                                     | 1.0.0         |
 
 > **Note:**
 >
+> - `GOOGLE_SAFE_BROWSING_API_KEY` , `GOOGLE_SAFE_BROWSING_CLIENT_ID` and `GOOGLE_SAFE_BROWSING_CLIENT_VERSION` are optional, if not provided, the API will not check if the longUrl is malicious or not and will continue to generate short URL.
 > - `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` are **required** for JWT authentication.
 > - `MAX_DEVICES` controls how many concurrent sessions a user can have.
 > - If `FRONTEND_URL` is not set, API will accept requests from all origins.

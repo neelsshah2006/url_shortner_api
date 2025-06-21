@@ -11,9 +11,11 @@ module.exports.shorten = catchAsync(async (req, res) => {
   if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
 
   const { longUrl } = req.body;
-  const isSafe = checkUrlSafety(longUrl);
-  if (!isSafe) {
-    throw new BadRequestError("URL flagged as Unsafe");
+  if (process.env.GOOGLE_SAFE_BROWSING_API_KEY) {
+    const isSafe = checkUrlSafety(longUrl);
+    if (!isSafe) {
+      throw new BadRequestError("URL flagged as Unsafe");
+    }
   }
   const id = req.user._id;
 
