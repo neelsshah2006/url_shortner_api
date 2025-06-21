@@ -43,6 +43,7 @@
         <li>Advanced Session Management (device/session limits, cleanup)</li>
         <li>Secure Password Hashing (bcrypt)</li>
         <li>URL Shortening (unique/custom codes)</li>
+        <li>URL Safety Check before creating short URL (Google Safe Browsing API)</li>
         <li>Redirection & Analytics (visit/device/timestamp tracking)</li>
         <li>User Profile Management</li>
         <li>User-Specific Link Management</li>
@@ -466,7 +467,7 @@
 ├── app.js
 ├── .env
 ├── package.json
-├── db/
+├── config/
 │   └── mongodb.config.js
 ├── controllers/
 │   ├── url.controller.js
@@ -505,6 +506,7 @@
 │   ├── refreshTokenValidator.util.js
 │   ├── setCookie.util.js
 │   ├── browserReqChecker.util.js
+│   ├── checkUrlSafety.util.js
 │   └── UAParser.util.js
 └── ...
 </code></pre>

@@ -1,5 +1,5 @@
 const app = require("./app");
-const connectDB = require("./db/mongodb.config");
+const connectDB = require("./config/mongodb.config");
 
 if (
   !process.env.MONGO_URL ||

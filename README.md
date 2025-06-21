@@ -36,6 +36,7 @@ A robust, secure, and scalable RESTful API for shortening URLs. This backend ser
 - **Advanced Session Management**: Configurable device/session limits, automatic cleanup
 - **Secure Password Hashing**: Bcrypt with configurable salt rounds
 - **URL Shortening**: Unique and custom short codes
+- **URL Safety Check**: Checks if the URL is safe using Google Safe Browsing API before creating short URL
 - **Redirection & Analytics**: Track visits, device info, and timestamps
 - **User Profile Management**: Update profile, change password
 - **User-Specific Link Management**: List, update, and delete links
@@ -528,7 +529,7 @@ url_shortner_api/
 ├── app.js
 ├── .env
 ├── package.json
-├── db/
+├── config/
 │   └── mongodb.config.js
 ├── controllers/
 │   ├── url.controller.js
@@ -567,6 +568,7 @@ url_shortner_api/
 │   ├── refreshTokenValidator.util.js
 │   ├── setCookie.util.js
 │   ├── browserReqChecker.util.js
+│   ├── checkUrlSafety.util.js
 │   └── UAParser.util.js
 └── ...
 ```

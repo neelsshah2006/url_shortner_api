@@ -1,13 +1,9 @@
 const { validationResult } = require("express-validator");
 const urlService = require("../services/url.service");
-const urlModel = require("../models/url.model");
-const {
-  NotFoundError,
-  BadRequestError,
-  UnauthorizedError,
-} = require("../utils/appError.util");
+const { BadRequestError } = require("../utils/appError.util");
 const { sendSuccess } = require("../utils/response.util");
 const catchAsync = require("../utils/catchAsync.util");
+const { checkUrlSafety } = require("../utils/checkUrlSafety.util");
 
 // SHORTEN
 module.exports.shorten = catchAsync(async (req, res) => {
@@ -15,6 +11,10 @@ module.exports.shorten = catchAsync(async (req, res) => {
   if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
 
   const { longUrl } = req.body;
+  const isSafe = checkUrlSafety(longUrl);
+  if (!isSafe) {
+    throw new BadRequestError("URL flagged as Unsafe");
+  }
   const id = req.user._id;
 
   const shortUrl = await urlService.shorten({ longUrl, id });
@@ -33,12 +33,7 @@ module.exports.getStats = catchAsync(async (req, res) => {
 
   const id = req.user._id;
   const data = await urlService.getStats({ shortCode, id });
-  return sendSuccess(
-    res,
-    "URL Stats sent Successfully",
-    data,
-    200
-  );
+  return sendSuccess(res, "URL Stats sent Successfully", data, 200);
 });
 
 // CREATE CUSTOM URL
