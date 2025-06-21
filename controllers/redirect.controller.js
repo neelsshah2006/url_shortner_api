@@ -1,4 +1,6 @@
 const urlModel = require("../models/url.model");
+const redirectService = require("../services/redirect.service");
+const { isRealBrowser } = require("../utils/browserReqChecker.util");
 
 module.exports.redirection = async (req, res) => {
   try {
@@ -8,7 +10,12 @@ module.exports.redirection = async (req, res) => {
       throw new Error("Incorrect ShortCode");
     }
 
-    await url.incrementVisitCount();
+    const ua = req.ua;
+    if (isRealBrowser(req, ua.ua)) {
+      const ip = req.clientIp;
+      await redirectService.redirection({ ua, id: url._id, ip });
+      await url.incrementVisitCount();
+    }
 
     let redirectUrl = url.longUrl;
     if (!/^https?:\/\//i.test(redirectUrl)) {

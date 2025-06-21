@@ -1,25 +1,47 @@
 # URL Shortener API
 
-A minimal and efficient RESTful API for shortening URLs. This backend service allows users to register, authenticate, create, manage, and track shortened links with robust authentication and statistics.
+A robust, secure, and scalable RESTful API for shortening URLs. This backend service enables users to register, authenticate, create, manage, and track shortened links with advanced session management, analytics, and security best practices.
 
-API is currently openly availabe. Each of the following API Endpoint is currently live on the domain: https://url-shortner-api-k63s.onrender.com
+> **Live API:** [https://url-shortner-api-k63s.onrender.com](https://url-shortner-api-k63s.onrender.com)
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Running the Project](#running-the-project)
+- [API Documentation](#api-documentation)
+  - [Authentication](#authentication)
+  - [User Endpoints](#user-endpoints)
+  - [URL Management](#url-management)
+  - [Redirection](#redirection)
+  - [Error Response Format](#error-response-format)
+- [Authentication & Authorization](#authentication--authorization)
+- [Folder Structure](#folder-structure)
+- [Performance & Optimization](#performance--optimization)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact / Credits](#contact--credits)
 
 ---
 
 ## Features
 
-- User registration and authentication (JWT & cookies)
-- **🔒 Advanced Session Management**: Configurable device limit with automatic cleanup
-- Secure password hashing with bcrypt
-- URL shortening with unique short codes
-- Creation and Editing of Custom URLs
-- Redirection to original URLs with visit tracking
-- URL statistics (visit count, creation date)
-- User profile management
-- User-specific link management
-- **🚀 Automatic Token Cleanup**: Expired tokens removed automatically
-- **🛡️ Backward Compatible**: Seamless migration from old token formats
-- Clean API documentation and comprehensive error handling
+- **User Registration & Authentication** (JWT & HTTP-only cookies)
+- **Advanced Session Management**: Configurable device/session limits, automatic cleanup
+- **Secure Password Hashing**: Bcrypt with configurable salt rounds
+- **URL Shortening**: Unique and custom short codes
+- **Redirection & Analytics**: Track visits, device info, and timestamps
+- **User Profile Management**: Update profile, change password
+- **User-Specific Link Management**: List, update, and delete links
+- **Automatic Token Cleanup**: Expired tokens removed automatically
+- **Comprehensive Error Handling**: Consistent, structured error responses
+- **CORS Protection**: Configurable cross-origin resource sharing
 
 ---
 
@@ -31,7 +53,8 @@ API is currently openly availabe. Each of the following API Endpoint is currentl
 - **Authentication:** JWT, bcrypt
 - **Templating:** EJS
 - **Validation:** express-validator
-- **Other:** dotenv, cookie-parser, morgan, cors, helmet
+- **Security:** helmet, cookie-parser, cors
+- **Other:** dotenv, morgan, ua-parser-js
 
 ---
 
@@ -67,25 +90,24 @@ MAX_DEVICES=5
 FRONTEND_URL=your_frontend_website_url
 ```
 
-| Variable             | Description                          | Default |
-| -------------------- | ------------------------------------ | ------- |
-| PORT                 | Port to run the server on            | 3000    |
-| MONGO_URL            | MongoDB connection string            | -       |
-| ACCESS_TOKEN_SECRET  | Secret key for access token signing  | -       |
-| REFRESH_TOKEN_SECRET | Secret key for refresh token signing | -       |
-| ACCESS_TOKEN_EXPIRY  | Access token expiration time         | -       |
-| REFRESH_TOKEN_EXPIRY | Refresh token expiration time        | -       |
-| NODE_ENV             | Environment (development/production) | -       |
-| ROUNDS               | Bcrypt salt rounds for password hash | 10      |
-| MAX_DEVICES          | Maximum concurrent devices per user  | 5       |
-| FRONTEND_URL         | Your Frontend Website URL (Optional) | -       |
+| Variable             | Description                                 | Example     |
+| -------------------- | ------------------------------------------- | ----------- |
+| PORT                 | Port to run the server on                   | 5000        |
+| MONGO_URL            | MongoDB connection string                   | -           |
+| ACCESS_TOKEN_SECRET  | Secret key for access token signing         | -           |
+| REFRESH_TOKEN_SECRET | Secret key for refresh token signing        | -           |
+| ACCESS_TOKEN_EXPIRY  | Access token expiration time                | 15m         |
+| REFRESH_TOKEN_EXPIRY | Refresh token expiration time               | 7d          |
+| NODE_ENV             | Environment (development/production)        | development |
+| ROUNDS               | Bcrypt salt rounds for password hash        | 15          |
+| MAX_DEVICES          | Maximum concurrent devices per user         | 5           |
+| FRONTEND_URL         | Allowed frontend origin for CORS (optional) |             |
 
-**Important Notes:**
-
-- `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` are **required** for JWT authentication
-- `MAX_DEVICES` controls how many concurrent sessions a user can have (default: 5)
-- `FRONTEND_URL` is optional - if not provided, API will accept requests from all websites
-- When a user exceeds the device limit, the oldest session is automatically removed
+> **Note:**
+>
+> - `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` are **required** for JWT authentication.
+> - `MAX_DEVICES` controls how many concurrent sessions a user can have.
+> - If `FRONTEND_URL` is not set, API will accept requests from all origins.
 
 ### Running the Project
 
@@ -95,7 +117,7 @@ npm start
 node server.js
 ```
 
-The server will start on `http://localhost:5000` (or your specified port in the environment variables).
+The server will start on `http://localhost:5000` (or your specified port).
 
 ---
 
@@ -117,30 +139,27 @@ The server will start on `http://localhost:5000` (or your specified port in the 
     "password": "Password@123"
   }
   ```
-- **Response:**
-  - `201 Created`
-    ```json
-    {
-      "success": true,
-      "message": "User Registered Successfully",
-      "data": {
-        "fullName": {
-          "firstName": "Neel",
-          "lastName": "Shah",
-          "_id": "..."
-        },
-        "username": "neelsshah2006",
-        "email": "neelsshah2006@gmail.com",
-        "_id": "...",
-        "createdAt": "2025-06-20T16:48:02.612Z",
-        "updatedAt": "2025-06-20T16:48:02.659Z",
-        "__v": 1
+- **Response:** `201 Created`
+  ```json
+  {
+    "success": true,
+    "message": "User Registered Successfully",
+    "data": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Neel",
+        "lastName": "Shah",
+        "_id": "..."
       },
-      "statusCode": 201,
-      "timestamp": "2025-06-20T16:48:02.678Z"
-    }
-    ```
-  - `400/409/500` with error message
+      "username": "neelsshah2006",
+      "email": "neelsshah2006@gmail.com",
+      "createdAt": "...",
+      "updatedAt": "..."
+    },
+    "statusCode": 201,
+    "timestamp": "..."
+  }
+  ```
 
 #### Login
 
@@ -154,13 +173,60 @@ The server will start on `http://localhost:5000` (or your specified port in the 
   ```json
   { "username": "neelsshah2006", "password": "Password@123" }
   ```
-- **Response:**
-  - `200 OK` with JWT token and user info
-    ```json
-    {
-      "success": true,
-      "message": "User Login Successful",
-      "data": {
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "User Login Successful",
+    "data": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Neel",
+        "lastName": "Shah",
+        "_id": "..."
+      },
+      "username": "neelsshah2006",
+      "email": "neelsshah2006@gmail.com",
+      "createdAt": "...",
+      "updatedAt": "..."
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
+
+#### Logout
+
+- **GET** `/auth/logout`
+- **Authentication:** Cookie
+- **Description:** Logs out user and removes refresh token from active sessions.
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Logged Out Successfully",
+    "data": "Logged Out",
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
+
+---
+
+### User Endpoints
+
+#### Get Profile
+
+- **GET** `/user/profile`
+- **Authentication:** Cookie
+- **Description:** Get current user's profile.
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Profile Sent Successfully",
+    "data": {
+      "user": {
         "_id": "...",
         "fullName": {
           "firstName": "Neel",
@@ -169,303 +235,243 @@ The server will start on `http://localhost:5000` (or your specified port in the 
         },
         "username": "neelsshah2006",
         "email": "neelsshah2006@gmail.com",
-        "createdAt": "2025-06-20T16:48:02.612Z",
-        "updatedAt": "2025-06-20T16:49:38.295Z",
-        "__v": 2
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T16:49:38.302Z"
-    }
-    ```
-  - `400/401/404/500` with error message
-
-#### Logout
-
-- **GET** `/auth/logout`
-- **Authentication:** Cookie
-- **Description:** Logs out user and removes refresh token from active sessions.
-- **Response:**
-  - `200 OK` with success message
-    ```json
-    {
-      "success": true,
-      "message": "Logged Out Successfully",
-      "data": "Logged Out",
-      "statusCode": 200,
-      "timestamp": "..."
-    }
-    ```
-  - `400/401/500` with error message
-
----
-
-### User
-
-#### Get Profile
-
-- **GET** `/user/profile`
-- **Authentication:** Cookie
-- **Description:** Get current user's profile.
-- **Response:**
-  - `200 OK` with user profile
-    ```json
-    {
-      "success": true,
-      "message": "Profile Sent Successfully",
-      "data": {
-        "user": {
-          "_id": "...",
-          "fullName": {
-            "firstName": "Neel",
-            "lastName": "Shah",
-            "_id": "..."
-          },
-          "username": "neelsshah2006",
-          "email": "neelsshah2006@gmail.com",
-          "createdAt": "2025-06-20T16:48:02.612Z",
-          "updatedAt": "2025-06-20T16:49:38.295Z",
-          "__v": 2
-        }
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T16:52:02.543Z"
-    }
-    ```
-  - `401/500` with error message
+        "createdAt": "...",
+        "updatedAt": "..."
+      }
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
 
 #### Update Profile
 
 - **PATCH** `/user/update-profile`
 - **Authentication:** Cookie
-- **Body:**
+- **Request Body:**
   ```json
   { "firstName": "Moksh", "lastName": "Shah", "username": "mokshshah" }
   ```
-- **Response:**
-  - `200 OK` with updated profile
-    ```json
-    {
-      "success": true,
-      "message": "Profile Updated Successfully",
-      "data": {
-        "user": {
-          "_id": "...",
-          "fullName": {
-            "firstName": "Moksh",
-            "lastName": "Shah",
-            "_id": "..."
-          },
-          "username": "mokshshah",
-          "email": "neelsshah2006@gmail.com",
-          "createdAt": "2025-06-20T16:48:02.612Z",
-          "updatedAt": "2025-06-20T16:54:31.881Z",
-          "__v": 2
-        }
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T16:54:31.888Z"
-    }
-    ```
-  - `400/401/500` with error message
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Profile Updated Successfully",
+    "data": {
+      "user": {
+        "_id": "...",
+        "fullName": {
+          "firstName": "Moksh",
+          "lastName": "Shah",
+          "_id": "..."
+        },
+        "username": "mokshshah",
+        "email": "neelsshah2006@gmail.com",
+        "createdAt": "...",
+        "updatedAt": "..."
+      }
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
 
 #### Change Password
 
 - **PATCH** `/user/change-password`
 - **Authentication:** Cookie
-- **Body:**
+- **Request Body:**
   ```json
   { "oldPassword": "Password@123", "newPassword": "NewPass@456" }
   ```
-- **Response:**
-  - `200 OK` with updated user info
-    ```json
-    {
-      "success": true,
-      "message": "Password Changed Successfully",
-      "data": {
-        "user": {
-          "_id": "...",
-          "fullName": {
-            "firstName": "Moksh",
-            "lastName": "Shah",
-            "_id": "..."
-          },
-          "username": "mokshshah",
-          "email": "neelsshah2006@gmail.com",
-          "createdAt": "2025-06-20T16:48:02.612Z",
-          "updatedAt": "2025-06-20T16:58:03.667Z",
-          "__v": 2
-        }
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T16:58:03.690Z"
-    }
-    ```
-  - `400/401/500` with error message
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Password Changed Successfully",
+    "data": {
+      "user": {
+        "_id": "...",
+        "fullName": {
+          "firstName": "Moksh",
+          "lastName": "Shah",
+          "_id": "..."
+        },
+        "username": "mokshshah",
+        "email": "neelsshah2006@gmail.com",
+        "createdAt": "...",
+        "updatedAt": "..."
+      }
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
 
 #### Get User Links
 
 - **GET** `/user/get-links`
 - **Authentication:** Cookie
-- **Response:**
-  - `200 OK` with list of user's URLs
-    ```json
-    {
-      "success": true,
-      "message": "Links Sent Successfully",
-      "data": {
-        "links": [
-          {
-            "_id": "...",
-            "longUrl": "https://example.com",
-            "shortCode": "4p9FIv",
-            "visitCount": 0,
-            "createdAt": "2025-06-20T16:58:48.439Z"
-          },
-          {
-            "_id": "...",
-            "longUrl": "https://www.google.com",
-            "shortCode": "google",
-            "visitCount": 0,
-            "createdAt": "2025-06-20T16:55:52.757Z"
-          }
-        ]
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T17:01:31.857Z"
-    }
-    ```
-  - `401/500` with error message
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Links Sent Successfully",
+    "data": {
+      "links": [
+        {
+          "_id": "...",
+          "longUrl": "https://example.com",
+          "shortCode": "xxxxxx",
+          "visitCount": 1,
+          "createdAt": "..."
+        }
+      ]
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
 
 ---
 
-### URL
+### URL Management
 
 #### Shorten URL
 
 - **POST** `/url/shorten`
 - **Authentication:** Cookie
-- **Body:**
+- **Request Body:**
   ```json
   { "longUrl": "https://example.com" }
   ```
-- **Response:**
-  - `200 OK` with shortened URL info
-    ```json
-    {
-      "success": true,
-      "message": "URL Shortened Successfully",
-      "data": {
-        "shortUrl": {
-          "user": "...",
-          "longUrl": "https://example.com",
-          "shortCode": "4p9FIv",
-          "visitCount": 0,
-          "_id": "...",
-          "createdAt": "2025-06-20T16:58:48.439Z",
-          "updatedAt": "2025-06-20T16:58:48.439Z",
-          "__v": 0
-        }
-      },
-      "statusCode": 201,
-      "timestamp": "2025-06-20T16:58:48.444Z"
-    }
-    ```
-  - `400/401/500` with error message
+- **Response:** `201 Created`
+  ```json
+  {
+    "success": true,
+    "message": "URL Shortened Successfully",
+    "data": {
+      "shortUrl": {
+        "user": "...",
+        "longUrl": "https://example.com",
+        "shortCode": "xxxxxx",
+        "visitCount": 0,
+        "_id": "...",
+        "createdAt": "...",
+        "updatedAt": "...",
+        "__v": 0
+      }
+    },
+    "statusCode": 201,
+    "timestamp": "..."
+  }
+  ```
 
-#### Change Shortened URL to a custom URL or Update a custom URL
+#### Change Shortened URL to a Custom URL
 
 - **PATCH** `/url/custom-url`
 - **Authentication:** Cookie
-- **Body:**
+- **Request Body:**
   ```json
   {
     "existingCode": "xxxxxx",
-    "customCode": "google"
+    "customCode": "example"
   }
   ```
-- `customCode` must be atleast 6 characters long
-- **Response:**
-  - `200 OK` with shortened URL info
-    ```json
-    {
-      "success": true,
-      "message": "Custom Code attached successfully",
-      "data": {
-        "shortUrl": {
-          "_id": "...",
-          "user": "...",
-          "longUrl": "https://www.google.com",
-          "shortCode": "google",
-          "visitCount": 0,
-          "createdAt": "2025-06-20T16:55:52.757Z",
-          "updatedAt": "2025-06-20T17:00:36.942Z",
-          "__v": 0
-        }
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T17:00:36.952Z"
-    }
-    ```
-  - `400/401/404/409/500` with error message
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Custom Code attached successfully",
+    "data": {
+      "shortUrl": {
+        "_id": "...",
+        "user": "...",
+        "longUrl": "https://example.com",
+        "shortCode": "example",
+        "visitCount": 0,
+        "createdAt": "...",
+        "updatedAt": "...",
+        "__v": 0
+      }
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
 
 #### Get URL Stats
 
-- **GET** `/url/stats`
-- **Params** `shortCode=xxxxxx`
+- **GET** `/url/stats?shortCode=xxxxxx`
 - **Authentication:** Cookie
-- **Response:**
-  - `200 OK` with URL stats
-    ```json
-    {
-      "success": true,
-      "message": "URL Stats sent Successfully",
-      "data": {
-        "shortUrl": {
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "URL Stats sent Successfully",
+    "data": {
+      "shortUrl": {
+        "_id": "...",
+        "user": "...",
+        "longUrl": "https://example.com",
+        "shortCode": "xxxxxx",
+        "visitCount": 1,
+        "createdAt": "...",
+        "updatedAt": "...",
+        "__v": 0
+      },
+      "clicks": [
+        {
           "_id": "...",
-          "user": "...",
-          "longUrl": "https://www.google.com",
-          "shortCode": "google",
-          "visitCount": 0,
-          "createdAt": "2025-06-20T16:55:52.757Z",
-          "updatedAt": "2025-06-20T17:00:36.942Z",
+          "url": "...",
+          "continent": "Asia",
+          "country": "India",
+          "state": "Gujarat",
+          "city": "Surat",
+          "location": {
+            "ltd": "21.1981",
+            "lng": "72.8298",
+            "_id": "..."
+          },
+          "browser": "Chrome",
+          "os": "Windows",
+          "device": "desktop",
+          "createdAt": "...",
+          "updatedAt": "...",
           "__v": 0
         }
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T17:03:57.905Z"
-    }
-    ```
-  - `400/401/404/500` with error message
+      ]
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
 
 #### Delete URL
 
-- **DELETE** `/url/delete`
-- **Params** `shortCode=xxxxxx`
+- **DELETE** `/url/delete?shortCode=xxxxxx`
 - **Authentication:** Cookie
-- **Response:**
-  - `200 OK` with deletion result
-    ```json
-    {
-      "success": true,
-      "message": "URL Deleted Successfully",
-      "data": {
-        "deletedUrl": {
-          "_id": "...",
-          "user": "...",
-          "longUrl": "https://www.google.com",
-          "shortCode": "google",
-          "visitCount": 0,
-          "createdAt": "2025-06-20T16:55:52.757Z",
-          "updatedAt": "2025-06-20T17:00:36.942Z",
-          "__v": 0
-        }
-      },
-      "statusCode": 200,
-      "timestamp": "2025-06-20T17:04:36.912Z"
-    }
-    ```
-  - `400/401/404/500` with error message
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "URL Deleted Successfully",
+    "data": {
+      "deletedUrl": {
+        "_id": "...",
+        "user": "...",
+        "longUrl": "https://example.com",
+        "shortCode": "xxxxxx",
+        "visitCount": 1,
+        "createdAt": "...",
+        "updatedAt": "...",
+        "__v": 0
+      }
+    },
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
 
 ---
 
@@ -478,79 +484,44 @@ The server will start on `http://localhost:5000` (or your specified port in the 
 
 ---
 
-### Documentation
+### Error Response Format
 
-#### View API Documentation
-
-- **GET** `/`
-- **Description:** Opens the API Documentation for this URL Shortner
-
----
-
-## Example Error Response Format
-
-- `400`Bad Request -- Validation Error
-- `401` Unauthorized
-- `404` Not Found
-- `409` Conflict
-- `500` Internal Server Error
-
-### Sample Error Response Format
-
-```
-code = {
-400: "BAD_REQUEST",
-401: "UNAUTHORIZED",
-404: "NOT_FOUND",
-409: "CONFLICT",
-500: "INTERNAL_SERVER_ERROR",
-};
-```
+All errors follow a consistent structure:
 
 ```json
 {
   "success": false,
-  "message": "...message...",
-  "errorCode": "...code[statusCode]...",
-  "statusCode": "...statusCode...",
-  "timestamp": "...",
-  "stack": "...Error Stack..."
+  "message": "Error message",
+  "errorCode": "BAD_REQUEST",
+  "statusCode": 400,
+  "timestamp": "2025-06-21T12:00:00.000Z",
+  "stack": "..." // Only in development mode
 }
 ```
 
-- Stack will only be seen while on development mode (NODE_ENV=development)
+| Status | Error Code            | Description                 |
+| ------ | --------------------- | --------------------------- |
+| 400    | BAD_REQUEST           | Validation or input error   |
+| 401    | UNAUTHORIZED          | Authentication required     |
+| 404    | NOT_FOUND             | Resource not found          |
+| 409    | CONFLICT              | Duplicate or conflict error |
+| 500    | INTERNAL_SERVER_ERROR | Server error                |
+
+---
 
 ## Authentication & Authorization
 
-### 🔐 **Advanced Session Management**
-
-- **Dual Token System**: Access tokens (short-lived) + Refresh tokens (long-lived)
-- **Device Limit Control**: Configurable maximum concurrent sessions per user (default: 5)
-- **Automatic Session Cleanup**: Expired tokens removed automatically for optimal performance
-- **Secure Storage**: Tokens stored as HTTP-only cookies with proper security headers
-- **Backward Compatible**: Seamless migration from old token formats
-
-### 🛡️ **Security Features**
-
-- **Password Security**: Bcrypt hashing with configurable salt rounds
-- **Token Validation**: Cryptographic verification for authentication
-- **Session Management**: Oldest sessions automatically removed when device limit exceeded
-- **Error Handling**: Comprehensive error responses with proper HTTP status codes
-- **CORS Protection**: Configurable cross-origin resource sharing
-
-### 📱 **Multi-Device Support**
-
-- Users can be logged in on up to `MAX_DEVICES` devices simultaneously
-- When the limit is exceeded, the oldest session is automatically terminated
-- Each session is tracked with creation timestamps
-- Automatic cleanup of expired sessions maintains database efficiency
+- **Dual Token System:** Short-lived access tokens and long-lived refresh tokens (HTTP-only cookies)
+- **Session/Device Limit:** Configurable via `MAX_DEVICES` (default: 5). Oldest sessions are removed when limit is exceeded.
+- **Automatic Token Cleanup:** Expired tokens are removed automatically.
+- **Password Security:** Bcrypt hashing with configurable salt rounds.
+- **CORS:** If `FRONTEND_URL` is set, only requests from that origin are allowed.
 
 ---
 
 ## Folder Structure
 
 ```
-
 url_shortner_api/
 │
 ├── server.js
@@ -558,75 +529,57 @@ url_shortner_api/
 ├── .env
 ├── package.json
 ├── db/
-│ └── mongodb.config.js
+│   └── mongodb.config.js
 ├── controllers/
-│ ├── url.controller.js
-│ ├── user.controller.js
-│ ├── auth.controller.js
-│ └── redirect.controller.js
+│   ├── url.controller.js
+│   ├── user.controller.js
+│   ├── auth.controller.js
+│   └── redirect.controller.js
 ├── middleware/
-│ ├── auth.middleware.js
-│ └── errorHandler.middleware.js
+│   ├── auth.middleware.js
+│   └── errorHandler.middleware.js
 ├── models/
-│ ├── url.model.js
-│ └── user.model.js
+│   ├── url.model.js
+│   ├── user.model.js
+│   └── click.model.js
 ├── routes/
-│ ├── redirect.routes.js
-│ ├── url.routes.js
-│ ├── user.routes.js
-│ └── auth.routes.js
+│   ├── redirect.routes.js
+│   ├── url.routes.js
+│   ├── user.routes.js
+│   └── auth.routes.js
 ├── services/
-│ ├── auth.service.js
-│ ├── url.service.js
-│ └── user.service.js
+│   ├── auth.service.js
+│   ├── url.service.js
+│   ├── user.service.js
+│   └── redirect.service.js
 ├── public/
-│ ├── images/
-| │ ├── favicon.png
-| │ ├── github.svg
-| │ ├── linkedin.svg
-| │ └── mail.svg
-│ ├── javascripts/
-| │ └── homepage.js
-│ └── stylesheets/
-|   ├── homepage.css
-|   └── notfound.css
+│   ├── images/
+│   ├── javascripts/
+│   └── stylesheets/
 ├── views/
-│ ├── homepage.ejs
-│ └── notfound.ejs
+│   ├── homepage.ejs
+│   └── notfound.ejs
 ├── utils/
-│ ├── appError.util.js
-│ ├── catchAsync.util.js
-│ ├── response.util.js
-│ ├── nanoid6.util.js
-│ ├── refreshTokenValidator.util.js
-│ └── setCookie.util.js
+│   ├── appError.util.js
+│   ├── catchAsync.util.js
+│   ├── response.util.js
+│   ├── crypto.util.js
+│   ├── refreshTokenValidator.util.js
+│   ├── setCookie.util.js
+│   ├── browserReqChecker.util.js
+│   └── UAParser.util.js
 └── ...
-
 ```
 
 ---
 
-## 🚀 Performance & Optimization
+## Performance & Optimization
 
-### **High-Performance Authentication**
-
-- **Token Validation**: Uses `jwt.decode()` for faster parsing vs `jwt.verify()`
-- **Bulk Database Operations**: Efficient cleanup with `bulkWrite()` operations
-- **Automatic Cleanup**: Expired tokens removed without manual intervention
-
-### **Device Management**
-
-- **Configurable Limits**: Set `MAX_DEVICES` environment variable (default: 5)
-- **Automatic Session Management**: Oldest sessions removed when limit exceeded
-- **Memory Efficient**: No token accumulation with automatic cleanup
-- **Backward Compatible**: Handles migration from old token formats seamlessly
-
-### **Database Optimization**
-
-- **Indexed Fields**: Optimized queries with proper indexing
-- **Bulk Operations**: Reduced database round trips
-- **Efficient Cleanup**: Background token cleanup processes
-- **Schema Evolution**: Smooth migration from string to object token storage
+- **Token Validation:** Fast JWT parsing and verification
+- **Bulk Database Operations:** Efficient cleanup with `bulkWrite()`
+- **Automatic Cleanup:** Expired tokens and sessions are removed automatically
+- **Device Management:** Configurable session limits, automatic session removal
+- **Database Optimization:** Indexed fields, efficient queries, and schema evolution support
 
 ---
 
@@ -640,21 +593,18 @@ url_shortner_api/
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-You are free to use, modify, and distribute this software for personal or commercial purposes, provided that proper credit is given to the original author.
-
-© 2025 Neel Shah
 
 ---
 
 ## Contact / Credits
 
 - **Author:** [Neel Shah](mailto:neelsshah2006@gmail.com)
-- **Made with ❤️ by Neel Shah**
+- **GitHub:** [neelsshah2006](https://github.com/neelsshah2006)
+- **LinkedIn:** [linkedin.com/in/neelsshah2006](https://linkedin.com/in/neelsshah2006)
 
 ---
 
-\*\*Feel free to open issues
+\*\*Feel free to contribute and improve this project!\*\*

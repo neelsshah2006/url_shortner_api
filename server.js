@@ -6,8 +6,7 @@ if (
   !process.env.ACCESS_TOKEN_SECRET ||
   !process.env.REFRESH_TOKEN_SECRET ||
   !process.env.ACCESS_TOKEN_EXPIRY ||
-  !process.env.REFRESH_TOKEN_EXPIRY ||
-  !process.env.MAX_DEVICES
+  !process.env.REFRESH_TOKEN_EXPIRY
 ) {
   console.error("Missing required environment variables.");
   process.exit(1);

@@ -32,11 +32,11 @@ module.exports.getStats = catchAsync(async (req, res) => {
     throw new BadRequestError("shortCode query param is required");
 
   const id = req.user._id;
-  const url = await urlService.getStats({ shortCode, id });
+  const data = await urlService.getStats({ shortCode, id });
   return sendSuccess(
     res,
     "URL Stats sent Successfully",
-    { shortUrl: url },
+    data,
     200
   );
 });

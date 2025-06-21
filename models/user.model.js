@@ -158,33 +158,6 @@ userSchema.methods.getActiveDeviceCount = function () {
   return this.refreshToken.length;
 };
 
-userSchema.methods.getDeviceInfo = function () {
-  // Clean up expired tokens first (without saving)
-  this.cleanupExpiredTokens(false);
-
-  return this.refreshToken.map((tokenObj, index) => {
-    const tokenString =
-      typeof tokenObj === "string" ? tokenObj : tokenObj.token;
-    const createdAt =
-      typeof tokenObj === "string" ? new Date() : tokenObj.createdAt;
-
-    try {
-      const decoded = jwt.decode(tokenString);
-      return {
-        deviceIndex: index + 1,
-        createdAt: createdAt,
-        isValid: !!decoded && decoded.exp > Math.floor(Date.now() / 1000),
-      };
-    } catch (error) {
-      return {
-        deviceIndex: index + 1,
-        createdAt: createdAt,
-        isValid: false,
-      };
-    }
-  });
-};
-
 userSchema.statics.cleanupAllExpiredTokens = async function () {
   const users = await this.find({ refreshToken: { $exists: true, $ne: [] } });
   const bulkOps = [];

@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const helmet = require("helmet");
+const requestIp = require("request-ip");
 
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use(helmet());
+app.use(requestIp.mw());
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
@@ -47,6 +49,7 @@ const corsOptions = process.env.FRONTEND_URL
 app.use(cors(corsOptions));
 
 app.set("view engine", "ejs");
+app.set("trust proxy", true);
 
 app.use("/auth", authRoutes);
 app.use("/user", authMiddleware, userRoutes);

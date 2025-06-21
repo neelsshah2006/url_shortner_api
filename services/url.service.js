@@ -1,18 +1,19 @@
 const urlModel = require("../models/url.model");
-const nanoid6 = require("../utils/nanoid6.util");
+const crypto6 = require("../utils/crypto.util");
 const {
   BadRequestError,
   NotFoundError,
   ConflictError,
   UnauthorizedError,
 } = require("../utils/appError.util");
+const clickModel = require("../models/click.model");
 
 const shorten = async ({ longUrl, id }) => {
   if (!id || !longUrl) {
     throw new BadRequestError("User ID and long URL are required.");
   }
 
-  const shortCode = nanoid6();
+  const shortCode = crypto6();
 
   const url = await urlModel.create({
     user: id,
@@ -34,7 +35,9 @@ const getStats = async ({ shortCode, id }) => {
     );
   }
 
-  return url;
+  const clicks = await clickModel.find({ url: url._id });
+
+  return { shortUrl: url, clicks };
 };
 
 const createCustomUrl = async ({ existingCode, customCode, id }) => {
