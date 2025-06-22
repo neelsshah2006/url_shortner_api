@@ -10,5 +10,6 @@ router.use("/local", localAuthRoutes);
 router.use("/oauth", oAuthRoutes);
 
 router.get("/logout", authMiddleware, authController.logout);
+router.get("/check-auth", authMiddleware, authController.checkAuth);
 
 module.exports = router;

@@ -231,11 +231,39 @@ The server will start on `http://localhost:5000` (or your specified port).
 - **Description:** Logs out user and removes refresh token from active sessions.
 - **Note:** This endpoint can be used to logout from both Local and OAuth sessions.
 - **Response:** `200 OK`
+
   ```json
   {
     "success": true,
     "message": "Logged Out Successfully",
     "data": "Logged Out",
+    "statusCode": 200,
+    "timestamp": "..."
+  }
+  ```
+
+  #### Check Auth
+
+- **POST** `/auth/check-auth`
+- **Description:** Authenticates User.
+- **Authentication:** Cookie
+- **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "User is authenticated",
+    "data": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Neel",
+        "lastName": "Shah"
+      },
+      "username": "neelsshah2006",
+      "email": "neelsshah2006@gmail.com",
+      "authProvider": "local",
+      "createdAt": "...",
+      "updatedAt": "..."
+    },
     "statusCode": 200,
     "timestamp": "..."
   }

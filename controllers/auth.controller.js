@@ -14,3 +14,11 @@ module.exports.logout = catchAsync(async (req, res) => {
   res.clearCookie("refreshToken");
   sendSuccess(res, message, "Logged Out", 200);
 });
+
+// Check Authentication
+module.exports.checkAuth = catchAsync(async (req, res) => {
+  const user = req.user;
+  if (!user) throw new BadRequestError("User not authenticated");
+
+  sendSuccess(res, "User is authenticated", user, 200);
+});

@@ -211,6 +211,30 @@ Note:
   }</code></pre>
         </details>
       </div>
+      <div class="endpoint">
+        <strong>POST</strong> <code>/auth/check-auth</code> – Authenticates User.
+        <details>
+          <summary>Response <span style="color:green;">201 Created</span></summary>
+          <pre><code> {
+    "success": true,
+    "message": "User is authenticated",
+    "data": {
+      "_id": "...",
+      "fullName": {
+        "firstName": "Neel",
+        "lastName": "Shah"
+      },
+      "username": "neelsshah2006",
+      "email": "neelsshah2006@gmail.com",
+      "authProvider": "local",
+      "createdAt": "...",
+      "updatedAt": "..."
+    },
+    "statusCode": 201,
+    "timestamp": "..."
+  }</code></pre>
+        </details>
+      </div>
       <h3>User Endpoints</h3>
       <div class="endpoint">
         <strong>GET</strong> <code>/user/profile</code> – Get current user's profile.
