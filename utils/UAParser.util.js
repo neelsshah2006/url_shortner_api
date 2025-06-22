@@ -1,9 +1,22 @@
 const UAParser = require("ua-parser-js");
+const { LRUCache } = require("lru-cache");
+
+const cache = new LRUCache({
+  max: 1000,
+  ttl: 1000 * 60 * 60 * 24,
+});
 
 const ua = (req, res, next) => {
-  const parser = new UAParser();
-  const ua = req.headers["user-agent"] || "Unknown";
-  req.ua = parser.setUA(ua).getResult();
+  const uaString = req.headers["user-agent"] || "Unknown";
+
+  if (cache.has(uaString)) {
+    req.ua = cache.get(uaString);
+  } else {
+    const parser = new UAParser(uaString);
+    const parsed = parser.getResult();
+    cache.set(uaString, parsed);
+    req.ua = parsed;
+  }
   next();
 };
 

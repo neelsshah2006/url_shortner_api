@@ -23,7 +23,11 @@ module.exports.getLinks = catchAsync(async (req, res) => {
 // Update Profile
 module.exports.updateProfile = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) throw new BadRequestError("Validation failed");
+  if (!errors.isEmpty())
+    throw new BadRequestError({
+      message: "Validation Error",
+      errors: errors.array(),
+    });
 
   const { firstName, lastName, username } = req.body;
   const id = req.user._id;
@@ -45,7 +49,11 @@ module.exports.updateProfile = catchAsync(async (req, res) => {
 // Change Password
 module.exports.changePassword = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) throw new BadRequestError("Validation failed");
+  if (!errors.isEmpty())
+    throw new BadRequestError({
+      message: "Validation Error",
+      errors: errors.array(),
+    });
 
   const { oldPassword, newPassword } = req.body;
   if (!newPassword || !oldPassword) {

@@ -23,6 +23,9 @@ module.exports.redirection = async (req, res) => {
     }
     res.redirect(redirectUrl);
   } catch (err) {
+    if (process.env.NODE_ENV === "development") {
+      console.error(err);
+    }
     res.render("notfound");
   }
 };

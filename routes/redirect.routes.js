@@ -17,8 +17,6 @@ router.get("/favicon.ico", (req, res) => {
   return res.sendFile(path.join(__dirname, "../public/images/favicon.png"));
 });
 
-router.use(ua);
-
-router.get("/:shortCode", redirectController.redirection);
+router.get("/:shortCode", ua, redirectController.redirection);
 
 module.exports = router;

@@ -34,9 +34,23 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return this.authProvider === "local";
+      },
       select: false,
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
     refreshToken: {
       type: [
         {
@@ -72,9 +86,8 @@ userSchema.methods.generateRefreshToken = async function () {
 
   this.cleanupExpiredTokens(false);
 
-  // Enforce device limit (default to 5 if not set)
   const MAX_DEVICES = parseInt(process.env.MAX_DEVICES, 10) || 5;
-  if (this.refreshToken.length >= MAX_DEVICES) {
+  if (this.refreshToken.length > MAX_DEVICES) {
     this.refreshToken.shift();
     console.log(
       `Device limit reached for user ${this._id}. Removed oldest session.`

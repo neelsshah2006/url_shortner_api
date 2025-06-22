@@ -39,14 +39,19 @@
     <section id="features">
       <h2>Features</h2>
       <ul>
-        <li>User Registration & Authentication (JWT & HTTP-only cookies)</li>
+        <li>User Registration & Authentication (JWT, OAuth, HTTP-only cookies)</li>
         <li>Advanced Session Management (device/session limits, cleanup)</li>
         <li>Secure Password Hashing (bcrypt)</li>
+        <li>OAuth2.0 Authentication (Google OAuth2.0)</li>
+        <li>Token Validation (JWT)</li>
+        <li>Automatic Cleanup of Expired Tokens</li>
+        <li>Database Optimization (Indexed fields, efficient queries, and schema evolution support)</li>
         <li>URL Shortening (unique/custom codes)</li>
         <li>URL Safety Check before creating short URL (Google Safe Browsing API)</li>
         <li>Redirection & Analytics (visit/device/timestamp tracking)</li>
         <li>User Profile Management</li>
         <li>User-Specific Link Management</li>
+        <li>Link Statistics</li>
         <li>Automatic Token Cleanup</li>
         <li>Comprehensive Error Handling</li>
         <li>CORS Protection</li>
@@ -59,11 +64,13 @@
         <li><strong>Language:</strong> JavaScript (Node.js)</li>
         <li><strong>Framework:</strong> Express.js</li>
         <li><strong>Database:</strong> MongoDB (Mongoose ODM)</li>
-        <li><strong>Authentication:</strong> JWT, bcrypt</li>
+        <li><strong>Authentication:</strong> JWT, bcrypt, Google OAuth</li>
         <li><strong>Templating:</strong> EJS</li>
         <li><strong>Validation:</strong> express-validator</li>
+        <li><strong>Caching:</strong> lru-cache</li>
         <li><strong>Security:</strong> helmet, cookie-parser, cors</li>
-        <li><strong>Other:</strong> dotenv, morgan, ua-parser-js</li>
+        <li><strong>Analytics:</strong> ua-parser-js, request-ip</li>
+        <li><strong>Other:</strong> dotenv, morgan, axios, crypto</li>
       </ul>
     </section>
 
@@ -80,18 +87,21 @@
   npm install</code></pre>
       <h3>Environment Variables</h3>
       <pre><code> PORT=5000
-  MONGO_URL=mongodb://127.0.0.1:27017/url_shortner
-  ACCESS_TOKEN_SECRET=your_access_token_secret
-  REFRESH_TOKEN_SECRET=your_refresh_token_secret
-  ACCESS_TOKEN_EXPIRY=15m
-  REFRESH_TOKEN_EXPIRY=7d
-  NODE_ENV=development
+  MONGO_URL="mongodb://127.0.0.1:27017/url_shortener"
   ROUNDS=15
+  NODE_ENV="development"
+  FRONTEND_URL="http://localhost:5173"
+  BACKEND_URL="http://localhost:5000"
   MAX_DEVICES=5
-  FRONTEND_URL=your_frontend_website_url
+  ACCESS_TOKEN_SECRET="your_access_token_secret"
+  REFRESH_TOKEN_SECRET="your_refresh_token_secret"
+  ACCESS_TOKEN_EXPIRY="15m"
+  REFRESH_TOKEN_EXPIRY="7d"
   GOOGLE_SAFE_BROWSING_API_KEY=your_google_api_key
-  GOOGLE_SAFE_BROWSING_CLIENT_ID="url-shortener"
-  GOOGLE_SAFE_BROWSING_CLIENT_VERSION="1.0.0"</code></pre>
+  GOOGLE_SAFE_BROWSING_CLIENT_ID=client_id
+  GOOGLE_SAFE_BROWSING_CLIENT_VERSION=client_version
+  GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
+  GOOGLE_OAUTH_CLIENT_SECRET=your_google_oauth_client_secret</code></pre>
       <pre>
 Note:
 
@@ -113,7 +123,7 @@ Note:
       <h2>API Documentation</h2>
       <h3>Authentication</h3>
       <div class="endpoint">
-        <strong>POST</strong> <code>/auth/register</code> – Register a new user.
+        <strong>POST</strong> <code>/auth/local/register</code> – Register a new user.
         <details>
           <summary>Request</summary>
           <pre><code> {
@@ -133,11 +143,11 @@ Note:
       "_id": "...",
       "fullName": {
         "firstName": "Neel",
-        "lastName": "Shah",
-        "_id": "..."
+        "lastName": "Shah"
       },
       "username": "neelsshah2006",
       "email": "neelsshah2006@gmail.com",
+      "authProvider": "local",
       "createdAt": "...",
       "updatedAt": "..."
     },
@@ -147,7 +157,7 @@ Note:
         </details>
       </div>
       <div class="endpoint">
-        <strong>POST</strong> <code>/auth/login</code> – Login with email or username.
+        <strong>POST</strong> <code>/auth/local/login</code> – Login with email or username.
         <details>
           <summary>Request (email)</summary>
           <pre><code> {
@@ -169,11 +179,11 @@ Note:
       "_id": "...",
       "fullName": {
         "firstName": "Neel",
-        "lastName": "Shah",
-        "_id": "..."
+        "lastName": "Shah"
       },
       "username": "neelsshah2006",
       "email": "neelsshah2006@gmail.com",
+      "authProvider": "local",
       "createdAt": "...",
       "updatedAt": "..."
     },
@@ -181,6 +191,12 @@ Note:
     "timestamp": "..."
   }</code></pre>
         </details>
+      </div>
+      <div class="endpoint">
+        <strong>GET</strong> <code>/auth/oauth/google</code> - Redirects to Google for authentication
+      </div>
+      <div class="endpoint">
+        <strong>GET</strong> <code>/auth/oauth/google/callback</code> - Handles Google Callback
       </div>
       <div class="endpoint">
         <strong>GET</strong> <code>/auth/logout</code> – Logout (cookie-based).
@@ -208,11 +224,11 @@ Note:
         "_id": "...",
         "fullName": {
           "firstName": "Neel",
-          "lastName": "Shah",
-          "_id": "..."
+          "lastName": "Shah"
         },
         "username": "neelsshah2006",
         "email": "neelsshah2006@gmail.com",
+        authProvider": "local",
         "createdAt": "...",
         "updatedAt": "..."
       }
@@ -242,11 +258,11 @@ Note:
         "_id": "...",
         "fullName": {
           "firstName": "Moksh",
-          "lastName": "Shah",
-          "_id": "..."
+          "lastName": "Shah"
         },
         "username": "mokshshah",
         "email": "neelsshah2006@gmail.com",
+        authProvider": "local",
         "createdAt": "...",
         "updatedAt": "..."
       }
@@ -275,11 +291,11 @@ Note:
         "_id": "...",
         "fullName": {
           "firstName": "Moksh",
-          "lastName": "Shah",
-          "_id": "..."
+          "lastName": "Shah"
         },
         "username": "mokshshah",
         "email": "neelsshah2006@gmail.com",
+        "authProvider": "local",
         "createdAt": "...",
         "updatedAt": "..."
       }
@@ -328,14 +344,13 @@ Note:
     "message": "URL Shortened Successfully",
     "data": {
       "shortUrl": {
+        "_id": "...",
         "user": "...",
         "longUrl": "https://example.com",
         "shortCode": "xxxxxx",
         "visitCount": 0,
-        "_id": "...",
         "createdAt": "...",
-        "updatedAt": "...",
-        "__v": 0
+        "updatedAt": "..."
       }
     },
     "statusCode": 201,
@@ -365,8 +380,7 @@ Note:
         "shortCode": "example",
         "visitCount": 0,
         "createdAt": "...",
-        "updatedAt": "...",
-        "__v": 0
+        "updatedAt": "..."
       }
     },
     "statusCode": 200,
@@ -386,10 +400,10 @@ Note:
         "_id": "...",
         "user": "...",
         "longUrl": "https://example.com",
-        "shortCode": "xxxxxx",
-        "visitCount": 1,
-        "createdAt": "...",
-        "updatedAt": "...",
+        "shortCode": "example",
+        "visitCount": 3,
+        "createdAt": "2025-06-22T15:29:20.419Z",
+        "updatedAt": "2025-06-22T15:31:46.073Z",
         "__v": 0
       },
       "clicks": [
@@ -398,19 +412,53 @@ Note:
           "url": "...",
           "continent": "Asia",
           "country": "India",
-          "state": "Gujarat",
-          "city": "Surat",
+          "state": "Maharashtra",
+          "city": "Mumbai",
           "location": {
-            "ltd": "21.1981",
-            "lng": "72.8298",
-            "_id": "..."
+            "ltd": 18.95,
+            "lng": 72.83
           },
           "browser": "Chrome",
           "os": "Windows",
           "device": "desktop",
+          "createdAt": "2025-06-22T15:31:36.527Z",
+          "updatedAt": "2025-06-22T15:31:36.527Z",
+          "__v": 0
+        },
+        {
+          "_id": "...",
+          "url": "...",
+          "continent": "Asia",
+          "country": "India",
+          "state": "Gujarat",
+          "city": "Surat",
+          "location": {
+            "ltd": 21.17,
+            "lng": 72.83
+          },
+          "browser": "Edge",
+          "os": "Android",
+          "device": "mobile",
           "createdAt": "...",
           "updatedAt": "...",
           "__v": 0
+        },
+        {
+          "_id": "...",
+          "url": "...",
+          "continent": "Asia",
+          "country": "India",
+          "state": "Gujarat",
+          "city": "Ahmedabad",
+          "location": {
+            "ltd": 23.0,
+            "lng": 72.57
+          },
+          "browser": "Safari",
+          "os": "ios",
+          "device": "iPad",
+          "createdAt": "...",
+          "updatedAt": "..."
         }
       ]
     },
@@ -432,10 +480,9 @@ Note:
         "user": "...",
         "longUrl": "https://example.com",
         "shortCode": "xxxxxx",
-        "visitCount": 1,
+        "visitCount": 3,
         "createdAt": "...",
-        "updatedAt": "...",
-        "__v": 0
+        "updatedAt": "..."
       }
     },
     "statusCode": 200,
@@ -465,7 +512,14 @@ Note:
       <h2>Authentication & Authorization</h2>
       <ul>
         <li>Dual Token System: Short-lived access tokens and long-lived refresh tokens (HTTP-only cookies)</li>
+        <li>Token Expiry: Access tokens expire after <code>ACCESS_TOKEN_EXPIRY</code>, refresh tokens after
+          <code>REFRESH_TOKEN_EXPIRY</code> days
+        </li>
         <li>Session/Device Limit: Configurable via <code>MAX_DEVICES</code> (default: 5)</li>
+        <li>Logout: Logs out user and removes refresh token from active sessions</li>
+        <li>OAuth2.0: Google OAuth2.0 for easy sign-in</li>
+        <li>Passwordless Login: Users can login with just their email (if they have a Google account associated with it)
+        </li>
         <li>Automatic Token Cleanup: Expired tokens are removed automatically</li>
         <li>Password Security: Bcrypt hashing with configurable salt rounds</li>
         <li>CORS: If <code>FRONTEND_URL</code> is set, only requests from that origin are allowed</li>
@@ -475,16 +529,18 @@ Note:
     <section id="folder-structure">
       <h2>Folder Structure</h2>
       <pre><code>url_shortner_api/
-│
 ├── server.js
 ├── app.js
 ├── .env
 ├── package.json
 ├── config/
-│   └── mongodb.config.js
+│   ├── mongodb.config.js
+│   └── passport.config.js
 ├── controllers/
 │   ├── url.controller.js
 │   ├── user.controller.js
+│   ├── localAuth.controller.js
+│   ├── oAuth.controller.js
 │   ├── auth.controller.js
 │   └── redirect.controller.js
 ├── middleware/
@@ -498,8 +554,11 @@ Note:
 │   ├── redirect.routes.js
 │   ├── url.routes.js
 │   ├── user.routes.js
-│   └── auth.routes.js
+│   ├── auth.routes.js
+│   ├── localAuth.routes.js
+│   └── oAuth.routes.js
 ├── services/
+│   ├── localAuth.service.js
 │   ├── auth.service.js
 │   ├── url.service.js
 │   ├── user.service.js
@@ -530,7 +589,7 @@ Note:
       <ol>
         <li>Fork the repository</li>
         <li>Create your branch (<code>git checkout -b branchName</code>)</li>
-        <li>Commit your changes (<code>git commit -am 'Add new feature'</code>)</li>
+        <li>Commit your changes (<code>git commit -m 'Add new feature'</code>)</li>
         <li>Push to the branch (<code>git push origin branchName</code>)</li>
         <li>Open a Pull Request</li>
       </ol>

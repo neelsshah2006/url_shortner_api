@@ -1,5 +1,8 @@
-const express = require("express");
 const dotenv = require("dotenv");
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
+const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
@@ -15,10 +18,8 @@ const redirectRoutes = require("./routes/redirect.routes");
 const errorHandler = require("./middleware/errorHandler.middleware");
 const { AppError } = require("./utils/appError.util");
 const authMiddleware = require("./middleware/auth.middleware");
+const passport = require("./config/passport.config");
 
-if (process.env.NODE_ENV !== "production") {
-  dotenv.config();
-}
 const app = express();
 
 app.use(express.json());
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use(helmet());
 app.use(requestIp.mw());
+app.use(passport.initialize());
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));

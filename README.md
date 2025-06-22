@@ -22,8 +22,8 @@ A robust, secure, and scalable RESTful API for shortening URLs. This backend ser
   - [Redirection](#redirection)
   - [Error Response Format](#error-response-format)
 - [Authentication & Authorization](#authentication--authorization)
-- [Folder Structure](#folder-structure)
 - [Performance & Optimization](#performance--optimization)
+- [Folder Structure](#folder-structure)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact / Credits](#contact--credits)
@@ -32,14 +32,19 @@ A robust, secure, and scalable RESTful API for shortening URLs. This backend ser
 
 ## Features
 
-- **User Registration & Authentication** (JWT & HTTP-only cookies)
+- **User Registration & Authentication** (JWT, OAuth, HTTP-only cookies)
 - **Advanced Session Management**: Configurable device/session limits, automatic cleanup
 - **Secure Password Hashing**: Bcrypt with configurable salt rounds
+- **OAuth2.0 Authentication**: Google OAuth2.0 for easy sign-in
+- **Token Validation**: Fast JWT parsing and verification
+- **Automatic Cleanup**: Expired tokens and sessions are removed automatically
+- **Database Optimization**: Indexed fields, efficient queries, and schema evolution support
 - **URL Shortening**: Unique and custom short codes
 - **URL Safety Check**: Checks if the URL is safe using Google Safe Browsing API before creating short URL
 - **Redirection & Analytics**: Track visits, device info, and timestamps
 - **User Profile Management**: Update profile, change password
 - **User-Specific Link Management**: List, update, and delete links
+- **Link Statistics**: Get detailed stats for each link
 - **Automatic Token Cleanup**: Expired tokens removed automatically
 - **Comprehensive Error Handling**: Consistent, structured error responses
 - **CORS Protection**: Configurable cross-origin resource sharing
@@ -51,11 +56,13 @@ A robust, secure, and scalable RESTful API for shortening URLs. This backend ser
 - **Language:** JavaScript (Node.js)
 - **Framework:** Express.js
 - **Database:** MongoDB (Mongoose ODM)
-- **Authentication:** JWT, bcrypt
+- **Authentication:** JWT, bcrypt, Google OAuth
 - **Templating:** EJS
 - **Validation:** express-validator
+- **Caching:** lru-cache
 - **Security:** helmet, cookie-parser, cors
-- **Other:** dotenv, morgan, ua-parser-js
+- **Analytics:** ua-parser-js, request-ip
+- **Other:** dotenv, morgan, axios, crypto
 
 ---
 
@@ -80,35 +87,43 @@ Create a `.env` file in the root directory:
 
 ```env
 PORT=5000
-MONGO_URL=mongodb://127.0.0.1:27017/url_shortner
-ACCESS_TOKEN_SECRET=your_access_token_secret
-REFRESH_TOKEN_SECRET=your_refresh_token_secret
-ACCESS_TOKEN_EXPIRY=15m
-REFRESH_TOKEN_EXPIRY=7d
-NODE_ENV=development
+MONGO_URL="mongodb://127.0.0.1:27017/url_shortener"
 ROUNDS=15
+NODE_ENV="development"
+FRONTEND_URL="http://localhost:5173"
+BACKEND_URL="http://localhost:5000"
 MAX_DEVICES=5
-FRONTEND_URL=your_frontend_website_url
+ACCESS_TOKEN_SECRET="your_access_token_secret"
+REFRESH_TOKEN_SECRET="your_refresh_token_secret"
+ACCESS_TOKEN_EXPIRY="15m"
+REFRESH_TOKEN_EXPIRY="7d"
 GOOGLE_SAFE_BROWSING_API_KEY=your_google_api_key
-GOOGLE_SAFE_BROWSING_CLIENT_ID="url-shortener"
-GOOGLE_SAFE_BROWSING_CLIENT_VERSION="1.0.0"
+GOOGLE_SAFE_BROWSING_CLIENT_ID=client_id
+GOOGLE_SAFE_BROWSING_CLIENT_VERSION=client_version
+GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_oauth_client_secret
 ```
 
-| Variable                            | Description                                               | Example       |
-| ----------------------------------- | --------------------------------------------------------- | ------------- |
-| PORT                                | Port to run the server on                                 | 5000          |
-| MONGO_URL                           | MongoDB connection string                                 | -             |
-| ACCESS_TOKEN_SECRET                 | Secret key for access token signing                       | -             |
-| REFRESH_TOKEN_SECRET                | Secret key for refresh token signing                      | -             |
-| ACCESS_TOKEN_EXPIRY                 | Access token expiration time                              | 15m           |
-| REFRESH_TOKEN_EXPIRY                | Refresh token expiration time                             | 7d            |
-| NODE_ENV                            | Environment (development/production)                      | development   |
-| ROUNDS                              | Bcrypt salt rounds for password hash                      | 15            |
-| MAX_DEVICES                         | Maximum concurrent devices per user                       | 5             |
-| FRONTEND_URL                        | Allowed frontend origin for CORS (optional)               |               |
-| GOOGLE_SAFE_BROWSING_API_KEY        | Your Google Console API key with SafeBrowsing API Enabled |               |
-| GOOGLE_SAFE_BROWSING_CLIENT_ID      | Google Client Id                                          | url-shortener |
-| GOOGLE_SAFE_BROWSING_CLIENT_VERSION | Google Client Version                                     | 1.0.0         |
+| Variable                            | Description                                               | Example               |
+| ----------------------------------- | --------------------------------------------------------- | --------------------- |
+| PORT                                | Port to run the server on                                 | 5000                  |
+| MONGO_URL                           | MongoDB connection string                                 |                       |
+| ROUNDS                              | Bcrypt salt rounds for password hash                      | 15                    |
+| NODE_ENV                            | Environment (development/production)                      | development           |
+| FRONTEND_URL                        | Allowed frontend origin for CORS (optional)               | http://localhost:5173 |
+| BACKEND_URL                         | Your Backend URL for Google OAuth callback                | http://localhost:5000 |
+| MAX_DEVICES                         | Maximum concurrent devices per user                       | 5(Default)            |
+| ACCESS_TOKEN_SECRET                 | Secret key for access token signing                       |                       |
+| REFRESH_TOKEN_SECRET                | Secret key for refresh token signing                      |                       |
+| ACCESS_TOKEN_EXPIRY                 | Access token expiration time                              | 15m                   |
+| REFRESH_TOKEN_EXPIRY                | Refresh token expiration time                             | 7d                    |
+| GOOGLE_SAFE_BROWSING_API_KEY        | Your Google Console API key with SafeBrowsing API Enabled |                       |
+| GOOGLE_SAFE_BROWSING_CLIENT_ID      | Google Client Id                                          |                       |
+| GOOGLE_SAFE_BROWSING_CLIENT_VERSION | Google Client Version                                     |                       |
+| GOOGLE_OAUTH_CLIENT_ID              | Google OAuth Client ID                                    |                       |
+| GOOGLE_OAUTH_CLIENT_SECRET          | Google OAuth Client Secret                                |                       |
+
+> See `.env.example` for a template.
 
 > **Note:**
 >
@@ -135,7 +150,7 @@ The server will start on `http://localhost:5000` (or your specified port).
 
 #### Register
 
-- **POST** `/auth/register`
+- **POST** `/auth/local/register`
 - **Description:** Register a new user.
 - **Request Body:**
   ```json
@@ -156,11 +171,11 @@ The server will start on `http://localhost:5000` (or your specified port).
       "_id": "...",
       "fullName": {
         "firstName": "Neel",
-        "lastName": "Shah",
-        "_id": "..."
+        "lastName": "Shah"
       },
       "username": "neelsshah2006",
       "email": "neelsshah2006@gmail.com",
+      "authProvider": "local",
       "createdAt": "...",
       "updatedAt": "..."
     },
@@ -171,7 +186,7 @@ The server will start on `http://localhost:5000` (or your specified port).
 
 #### Login
 
-- **POST** `/auth/login`
+- **POST** `/auth/local/register`
 - **Description:** Login with email or username.
 - **Request Body:**
   ```json
@@ -182,6 +197,7 @@ The server will start on `http://localhost:5000` (or your specified port).
   { "username": "neelsshah2006", "password": "Password@123" }
   ```
 - **Response:** `200 OK`
+
   ```json
   {
     "success": true,
@@ -190,11 +206,11 @@ The server will start on `http://localhost:5000` (or your specified port).
       "_id": "...",
       "fullName": {
         "firstName": "Neel",
-        "lastName": "Shah",
-        "_id": "..."
+        "lastName": "Shah"
       },
       "username": "neelsshah2006",
       "email": "neelsshah2006@gmail.com",
+      "authProvider": "local",
       "createdAt": "...",
       "updatedAt": "..."
     },
@@ -203,11 +219,17 @@ The server will start on `http://localhost:5000` (or your specified port).
   }
   ```
 
+#### Google OAuth
+
+- **GET** `/auth/oauth/google` – Redirects to Google for authentication.
+- **GET** `/auth/oauth/google/callback` – Handles Google callback.
+
 #### Logout
 
 - **GET** `/auth/logout`
 - **Authentication:** Cookie
 - **Description:** Logs out user and removes refresh token from active sessions.
+- **Note:** This endpoint can be used to logout from both Local and OAuth sessions.
 - **Response:** `200 OK`
   ```json
   {
@@ -238,11 +260,11 @@ The server will start on `http://localhost:5000` (or your specified port).
         "_id": "...",
         "fullName": {
           "firstName": "Neel",
-          "lastName": "Shah",
-          "_id": "..."
+          "lastName": "Shah"
         },
         "username": "neelsshah2006",
         "email": "neelsshah2006@gmail.com",
+        "authProvider": "local",
         "createdAt": "...",
         "updatedAt": "..."
       }
@@ -270,11 +292,11 @@ The server will start on `http://localhost:5000` (or your specified port).
         "_id": "...",
         "fullName": {
           "firstName": "Moksh",
-          "lastName": "Shah",
-          "_id": "..."
+          "lastName": "Shah"
         },
         "username": "mokshshah",
         "email": "neelsshah2006@gmail.com",
+        "authProvider": "local",
         "createdAt": "...",
         "updatedAt": "..."
       }
@@ -302,11 +324,11 @@ The server will start on `http://localhost:5000` (or your specified port).
         "_id": "...",
         "fullName": {
           "firstName": "Moksh",
-          "lastName": "Shah",
-          "_id": "..."
+          "lastName": "Shah"
         },
         "username": "mokshshah",
         "email": "neelsshah2006@gmail.com",
+        "authProvider": "local",
         "createdAt": "...",
         "updatedAt": "..."
       }
@@ -360,14 +382,13 @@ The server will start on `http://localhost:5000` (or your specified port).
     "message": "URL Shortened Successfully",
     "data": {
       "shortUrl": {
+        "_id": "...",
         "user": "...",
         "longUrl": "https://example.com",
         "shortCode": "xxxxxx",
         "visitCount": 0,
-        "_id": "...",
         "createdAt": "...",
-        "updatedAt": "...",
-        "__v": 0
+        "updatedAt": "..."
       }
     },
     "statusCode": 201,
@@ -399,8 +420,7 @@ The server will start on `http://localhost:5000` (or your specified port).
         "shortCode": "example",
         "visitCount": 0,
         "createdAt": "...",
-        "updatedAt": "...",
-        "__v": 0
+        "updatedAt": "..."
       }
     },
     "statusCode": 200,
@@ -422,10 +442,10 @@ The server will start on `http://localhost:5000` (or your specified port).
         "_id": "...",
         "user": "...",
         "longUrl": "https://example.com",
-        "shortCode": "xxxxxx",
-        "visitCount": 1,
-        "createdAt": "...",
-        "updatedAt": "...",
+        "shortCode": "example",
+        "visitCount": 3,
+        "createdAt": "2025-06-22T15:29:20.419Z",
+        "updatedAt": "2025-06-22T15:31:46.073Z",
         "__v": 0
       },
       "clicks": [
@@ -434,19 +454,53 @@ The server will start on `http://localhost:5000` (or your specified port).
           "url": "...",
           "continent": "Asia",
           "country": "India",
-          "state": "Gujarat",
-          "city": "Surat",
+          "state": "Maharashtra",
+          "city": "Mumbai",
           "location": {
-            "ltd": "21.1981",
-            "lng": "72.8298",
-            "_id": "..."
+            "ltd": 18.95,
+            "lng": 72.83
           },
           "browser": "Chrome",
           "os": "Windows",
           "device": "desktop",
+          "createdAt": "2025-06-22T15:31:36.527Z",
+          "updatedAt": "2025-06-22T15:31:36.527Z",
+          "__v": 0
+        },
+        {
+          "_id": "...",
+          "url": "...",
+          "continent": "Asia",
+          "country": "India",
+          "state": "Gujarat",
+          "city": "Surat",
+          "location": {
+            "ltd": 21.17,
+            "lng": 72.83
+          },
+          "browser": "Edge",
+          "os": "Android",
+          "device": "mobile",
           "createdAt": "...",
           "updatedAt": "...",
           "__v": 0
+        },
+        {
+          "_id": "...",
+          "url": "...",
+          "continent": "Asia",
+          "country": "India",
+          "state": "Gujarat",
+          "city": "Ahmedabad",
+          "location": {
+            "ltd": 23.0,
+            "lng": 72.57
+          },
+          "browser": "Safari",
+          "os": "ios",
+          "device": "iPad",
+          "createdAt": "...",
+          "updatedAt": "..."
         }
       ]
     },
@@ -469,11 +523,10 @@ The server will start on `http://localhost:5000` (or your specified port).
         "_id": "...",
         "user": "...",
         "longUrl": "https://example.com",
-        "shortCode": "xxxxxx",
-        "visitCount": 1,
+        "shortCode": "example",
+        "visitCount": 3,
         "createdAt": "...",
-        "updatedAt": "...",
-        "__v": 0
+        "updatedAt": "..."
       }
     },
     "statusCode": 200,
@@ -520,10 +573,25 @@ All errors follow a consistent structure:
 ## Authentication & Authorization
 
 - **Dual Token System:** Short-lived access tokens and long-lived refresh tokens (HTTP-only cookies)
+- **Token Expiry:** Access tokens expire after `ACCESS_TOKEN_EXPIRY`, refresh tokens after `REFRESH_TOKEN_EXPIRY` days.
 - **Session/Device Limit:** Configurable via `MAX_DEVICES` (default: 5). Oldest sessions are removed when limit is exceeded.
+- **Logout:** Logs out user and removes refresh token from active sessions.
+- **OAuth2.0:** Google OAuth2.0 for easy sign-in.
+- **Passwordless Login:** Users can login with just their email (if they have a Google account associated with it).
 - **Automatic Token Cleanup:** Expired tokens are removed automatically.
 - **Password Security:** Bcrypt hashing with configurable salt rounds.
 - **CORS:** If `FRONTEND_URL` is set, only requests from that origin are allowed.
+
+---
+
+## Performance & Optimization
+
+- **Token Validation:** Fast JWT parsing and verification
+- **Caching:** In-memory caching for frequently accessed data
+- **Bulk Database Operations:** Efficient cleanup with `bulkWrite()`
+- **Automatic Cleanup:** Expired tokens and sessions are removed automatically
+- **Device Management:** Configurable session limits, automatic session removal
+- **Database Optimization:** Indexed fields, efficient queries, and schema evolution support
 
 ---
 
@@ -531,16 +599,18 @@ All errors follow a consistent structure:
 
 ```
 url_shortner_api/
-│
 ├── server.js
 ├── app.js
 ├── .env
 ├── package.json
 ├── config/
-│   └── mongodb.config.js
+│   ├── mongodb.config.js
+│   └── passport.config.js
 ├── controllers/
 │   ├── url.controller.js
 │   ├── user.controller.js
+│   ├── localAuth.controller.js
+│   ├── oAuth.controller.js
 │   ├── auth.controller.js
 │   └── redirect.controller.js
 ├── middleware/
@@ -554,8 +624,11 @@ url_shortner_api/
 │   ├── redirect.routes.js
 │   ├── url.routes.js
 │   ├── user.routes.js
-│   └── auth.routes.js
+│   ├── auth.routes.js
+│   ├── localAuth.routes.js
+│   └── oAuth.routes.js
 ├── services/
+│   ├── localAuth.service.js
 │   ├── auth.service.js
 │   ├── url.service.js
 │   ├── user.service.js
@@ -582,21 +655,11 @@ url_shortner_api/
 
 ---
 
-## Performance & Optimization
-
-- **Token Validation:** Fast JWT parsing and verification
-- **Bulk Database Operations:** Efficient cleanup with `bulkWrite()`
-- **Automatic Cleanup:** Expired tokens and sessions are removed automatically
-- **Device Management:** Configurable session limits, automatic session removal
-- **Database Optimization:** Indexed fields, efficient queries, and schema evolution support
-
----
-
 ## Contributing
 
 1. Fork the repository
 2. Create your branch (`git checkout -b branchName`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
 4. Push to the branch (`git push origin branchName`)
 5. Open a Pull Request
 
@@ -616,4 +679,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-\*\*Feel free to contribute and improve this project!\*\*
+**Feel free to open issues or contribute!**

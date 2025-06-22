@@ -8,11 +8,15 @@ const { checkUrlSafety } = require("../utils/checkUrlSafety.util");
 // SHORTEN
 module.exports.shorten = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
+  if (!errors.isEmpty())
+    throw new BadRequestError({
+      message: "Validation Error",
+      errors: errors.array(),
+    });
 
   const { longUrl } = req.body;
   if (process.env.GOOGLE_SAFE_BROWSING_API_KEY) {
-    const isSafe = checkUrlSafety(longUrl);
+    const isSafe = await checkUrlSafety(longUrl);
     if (!isSafe) {
       throw new BadRequestError("URL flagged as Unsafe");
     }
@@ -27,7 +31,11 @@ module.exports.shorten = catchAsync(async (req, res) => {
 // GET STATS
 module.exports.getStats = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
+  if (!errors.isEmpty())
+    throw new BadRequestError({
+      message: "Validation Error",
+      errors: errors.array(),
+    });
 
   const { shortCode } = req.query;
   if (!shortCode)
@@ -41,7 +49,11 @@ module.exports.getStats = catchAsync(async (req, res) => {
 // CREATE CUSTOM URL
 module.exports.createCustomUrl = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
+  if (!errors.isEmpty())
+    throw new BadRequestError({
+      message: "Validation Error",
+      errors: errors.array(),
+    });
 
   const { existingCode, customCode } = req.body;
   const id = req.user._id;
@@ -63,7 +75,11 @@ module.exports.createCustomUrl = catchAsync(async (req, res) => {
 // DELETE URL
 module.exports.deleteUrl = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) throw new BadRequestError("Validation Error");
+  if (!errors.isEmpty())
+    throw new BadRequestError({
+      message: "Validation Error",
+      errors: errors.array(),
+    });
 
   const { shortCode } = req.query;
   if (!shortCode)
