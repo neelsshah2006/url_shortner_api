@@ -9,7 +9,7 @@ if (
   !process.env.REFRESH_TOKEN_EXPIRY ||
   !process.env.BACKEND_URL ||
   !process.env.GOOGLE_OAUTH_CLIENT_ID ||
-  !process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
+  !process.env.GOOGLE_OAUTH_CLIENT_SECRET
 ) {
   console.error("Missing required environment variables.");
   process.exit(1);
