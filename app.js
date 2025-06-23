@@ -37,13 +37,13 @@ if (process.env.NODE_ENV === "development") {
 const corsOptions = process.env.FRONTEND_URL
   ? {
       origin: process.env.FRONTEND_URL,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     }
   : {
       origin: "*",
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     };
