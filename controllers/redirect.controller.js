@@ -1,5 +1,6 @@
 const urlModel = require("../models/url.model");
 const redirectService = require("../services/redirect.service");
+const { NotFoundError } = require("../utils/appError.util");
 const { isRealBrowser } = require("../utils/browserReqChecker.util");
 
 module.exports.redirection = async (req, res) => {
@@ -7,7 +8,7 @@ module.exports.redirection = async (req, res) => {
     const { shortCode } = req.params;
     const url = await urlModel.findOne({ shortCode });
     if (!url) {
-      throw new Error("Incorrect ShortCode");
+      throw new NotFoundError("Incorrect ShortCode");
     }
 
     const ua = req.ua;
