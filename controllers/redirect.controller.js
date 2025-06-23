@@ -8,7 +8,7 @@ module.exports.redirection = async (req, res) => {
     const { shortCode } = req.params;
     const url = await urlModel.findOne({ shortCode });
     if (!url) {
-      throw new NotFoundError("Incorrect ShortCode");
+      return res.render("notfound");
     }
 
     const ua = req.ua;
