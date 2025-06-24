@@ -667,6 +667,7 @@ url_shortner_api/
 │   └── stylesheets/
 ├── views/
 │   ├── homepage.ejs
+│   ├── internetError.ejs
 │   └── notfound.ejs
 ├── utils/
 │   ├── appError.util.js

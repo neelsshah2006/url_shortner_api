@@ -27,6 +27,9 @@ module.exports.redirection = async (req, res) => {
     if (process.env.NODE_ENV === "development") {
       console.error(err);
     }
+    if (err.message === "Failed to log click or retrieve IP data.") {
+      return res.render("internetError");
+    }
     res.render("notfound");
   }
 };

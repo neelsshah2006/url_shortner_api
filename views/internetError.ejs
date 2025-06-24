@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Error | URL Shortener</title>
+    <link rel="shortcut icon" href="/images/favicon.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/internetError.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="icon-container">
+            <div class="icon">🌐</div>
+        </div>
+        <h1>Connection Error</h1>
+        <h2>We couldn't complete your request</h2>
+        <p>We encountered a problem while trying to process your URL. This could be due to:</p>
+        <ul>
+            <li>Temporary internet connectivity issues</li>
+            <li>Our server couldn't reach the analytics service</li>
+            <li>The destination website may be temporarily unavailable</li>
+        </ul>
+        <p>Please try again in a few moments. The page will automatically refresh in <span id="countdown">10</span>
+            seconds.</p>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="buttons">
+            <button class="btn btn-retry">Try Again</button>
+        </div>
+    </div>
+
+    <script src="/javascripts/internetError.js"></script>
+</body>
+
+</html>
