@@ -110,7 +110,8 @@ Note:
     if the longUrl is malicious or not and will continue to generate short URL.
  - <code>ACCESS_TOKEN_SECRET</code> and <code>REFRESH_TOKEN_SECRET</code> are required for JWT authentication.
  - <code>MAX_DEVICES</code> controls how many concurrent sessions a user can have.
- -  If `FRONTEND_URL` is not set, API will accept requests from all origins.
+ -  If <code>FRONTEND_URL</code> is not set, API will accept requests from all origins.
+ - However both <code>FRONTEND_URL</code> and <code>BACKEND_URL</code> are required for Google OAuth to work.
         </pre>
       <h3>Running the Project</h3>
       <pre><code> npm start

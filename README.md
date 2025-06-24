@@ -131,6 +131,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=your_google_oauth_client_secret
 > - `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` are **required** for JWT authentication.
 > - `MAX_DEVICES` controls how many concurrent sessions a user can have.
 > - If `FRONTEND_URL` is not set, API will accept requests from all origins.
+> - However both `FRONTEND_URL` and `BACKEND_URL` are required for Google OAuth to work.
 
 ### Running the Project
 

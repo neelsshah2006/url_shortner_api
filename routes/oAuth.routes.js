@@ -21,7 +21,7 @@ router.get(
 );
 
 router.get("/failure", (req, res) => {
-  throw new UnauthorizedError("Google Authentication Failed");
+  res.redirect(`${process.env.FRONTEND_URL}/auth?error=Google_Auth_failed`);
 });
 
 module.exports = router;
