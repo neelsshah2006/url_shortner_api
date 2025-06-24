@@ -82,6 +82,7 @@ const deleteUrl = async ({ shortCode, id }) => {
   }
 
   const deletedUrl = await urlModel.findOneAndDelete({ shortCode });
+  await clickModel.deleteMany({ url: deletedUrl._id });
   return deletedUrl;
 };
 
