@@ -37,7 +37,10 @@ const getStats = async ({ shortCode, id }) => {
 
   const clicks = await clickModel.find({ url: url._id });
 
-  return { shortUrl: url, clicks };
+  return {
+    shortUrl: url,
+    clicks: clicks,
+  };
 };
 
 const createCustomUrl = async ({ existingCode, customCode, id }) => {

@@ -8,11 +8,7 @@ const { checkUrlSafety } = require("../utils/checkUrlSafety.util");
 // SHORTEN
 module.exports.shorten = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    throw new BadRequestError({
-      message: "Validation Error",
-      errors: errors.array(),
-    });
+  if (!errors.isEmpty()) throw new BadRequestError(errors.array()[0].msg);
 
   const { longUrl } = req.body;
   if (process.env.GOOGLE_SAFE_BROWSING_API_KEY) {
@@ -31,11 +27,7 @@ module.exports.shorten = catchAsync(async (req, res) => {
 // GET STATS
 module.exports.getStats = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    throw new BadRequestError({
-      message: "Validation Error",
-      errors: errors.array(),
-    });
+  if (!errors.isEmpty()) throw new BadRequestError(errors.array()[0].msg);
 
   const { shortCode } = req.query;
   if (!shortCode)
@@ -49,11 +41,7 @@ module.exports.getStats = catchAsync(async (req, res) => {
 // CREATE CUSTOM URL
 module.exports.createCustomUrl = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    throw new BadRequestError({
-      message: "Validation Error",
-      errors: errors.array(),
-    });
+  if (!errors.isEmpty()) throw new BadRequestError(errors.array()[0].msg);
 
   const { existingCode, customCode } = req.body;
   const id = req.user._id;
@@ -75,11 +63,7 @@ module.exports.createCustomUrl = catchAsync(async (req, res) => {
 // DELETE URL
 module.exports.deleteUrl = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    throw new BadRequestError({
-      message: "Validation Error",
-      errors: errors.array(),
-    });
+  if (!errors.isEmpty()) throw new BadRequestError(errors.array()[0].msg);
 
   const { shortCode } = req.query;
   if (!shortCode)

@@ -9,11 +9,7 @@ const { BadRequestError, ConflictError } = require("../utils/appError.util");
 // Register
 module.exports.register = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    throw new BadRequestError({
-      message: "Validation Error",
-      errors: errors.array(),
-    });
+  if (!errors.isEmpty()) throw new BadRequestError(errors.array()[0].msg);
 
   const { firstName, lastName, username, email, password } = req.body;
   const normalizedEmail = email.trim().toLowerCase();
@@ -69,11 +65,7 @@ module.exports.register = catchAsync(async (req, res) => {
 // Login
 module.exports.login = catchAsync(async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
-    throw new BadRequestError({
-      message: "Validation Error",
-      errors: errors.array(),
-    });
+  if (!errors.isEmpty()) throw new BadRequestError(errors.array()[0].msg);
 
   const { email, username, password } = req.body;
   if (!email && !username)

@@ -19,7 +19,9 @@ const updateProfile = async ({ firstName, lastName, username, id }) => {
   if (!isUser) throw new NotFoundError("User not found");
 
   const isTaken = await userModel.findOne({ username: username });
-  if (isTaken) throw new ConflictError("This username is not available");
+  if (isTaken && !isTaken._id.equals(isUser._id)) {
+    throw new ConflictError("This username is not available");
+  }
 
   const user = await userModel.findOneAndUpdate(
     { _id: id },
