@@ -2,7 +2,7 @@
 
 A robust, secure, and scalable RESTful API for shortening URLs. This backend service enables users to register, authenticate, create, manage, and track shortened links with advanced session management, analytics, and security best practices.
 
-> **Live API:** [https://url-shortner-api-k63s.onrender.com](https://url-shortner-api-k63s.onrender.com)
+> **API DOCUMENTATION:** [https://url-shortner-api-k63s.onrender.com](https://url-shortner-api-k63s.onrender.com)
 
 ---
 
